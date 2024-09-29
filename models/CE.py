@@ -61,12 +61,12 @@ class CrossEntropyTraining(nn.Module):
         #     acc.append(accuracy(score, label_tasks[i]["query"].cuda())[0])
         return loss, acc
     
-    def val_forward(self, img_tasks,label_tasks, *args, **kwargs):
+    def val_forward(self, support_imgs, query_imgs, support_labels, query_labels, *args, **kwargs):
         # loss, acc = model.test_forward(imgs, labels, dataset_index)
-        return self.val_test_forward(img_tasks, label_tasks)
+        return self.val_test_forward(support_imgs, query_imgs, support_labels, query_labels)
     
-    def test_forward(self, img_tasks,label_tasks, *args,  **kwargs):
-        return self.val_test_forward(img_tasks, label_tasks)
+    def test_forward(self, support_imgs, query_imgs, support_labels, query_labels, *args,  **kwargs):
+        return self.val_test_forward(support_imgs, query_imgs, support_labels, query_labels)
 
 def get_model(config, num_classes):
     return CrossEntropyTraining(config, num_classes)
