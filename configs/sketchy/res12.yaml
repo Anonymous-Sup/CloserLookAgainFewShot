@@ -8,8 +8,8 @@ AUG:
   - 0.2634
   - 0.2794
 
-DATASET: ''
-DATA_ROOT: ''
+DATASET: xxx
+DATA_ROOT: xxx
 
 FEWSHOT:
   NWAY: 5

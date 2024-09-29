@@ -62,9 +62,6 @@ Data["TRAIN"]["BASE_LR"] = 0.1*Data["DATA"]["TRAIN"]["BATCH_SIZE"]/128
 
 
 
-
-
-
 if not os.path.exists('./configs/sketchy'):
    os.makedirs('./configs/sketchy')
 
