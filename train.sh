@@ -4,7 +4,8 @@
 
 # training CE model
 python write_yaml_CE_sketchy.py
-python main.py --cfg configs/sketchy/vit.yaml --tag main
+
+nohup python -u main.py --cfg configs/sketchy/vit.yaml --tag main > vitCE_base_sketchy.log 2>&1 &
 
 # training PN model
 # python write_yaml_PN.py
