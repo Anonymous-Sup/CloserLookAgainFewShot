@@ -40,7 +40,7 @@ Data["AUG"] = {}
 Data["AUG"]["MEAN"] = [0.4712, 0.4499, 0.4031]
 Data["AUG"]["STD"] = [0.2726, 0.2634, 0.2794]
 
-Data["OUTPUT"] = "./nohup_logs/base_sketchy"
+Data["OUTPUT"] = "/data/zhengwei/CloserLookAgainFewShot/base_sketchy"
 
 Data["MODEL"] = {}
 Data["MODEL"]["TYPE"] = "CE"

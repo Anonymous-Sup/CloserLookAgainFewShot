@@ -255,13 +255,12 @@ def validate(config, data_loader, model, epoch=None, writer=None):
     end = time.time()
 
     # dataset.set_epoch()
-
     for idx, batches in enumerate(data_loader):
         
-        # if idx >= 3:
-        #     logger.info("Only evaluate {} tasks".format(idx*batches[0].shape[0]))
-        #     break
-
+        if idx >= 3:
+            # logger.info("Only evaluate {} tasks".format(idx*batches[0].shape[0]))
+            break
+        
         # dataset_index, imgs, labels = batches
         dataset_index = 0
         support_imgs, query_imgs, support_labels, query_labels = batches        
