@@ -45,6 +45,9 @@ class FewshotBatchSampler(Sampler):
 
             yield episode_idxs
 
+    def __len__(self):
+        return self.trial
+
 
 class ValSampler(Sampler):
     def __init__(self, data_source, way, shot, query_shot, trial=2000):
@@ -82,6 +85,9 @@ class ValSampler(Sampler):
                 episode_idxs.extend(index_dic[pid][self.shot: self.shot + self.query_shot])
 
             yield episode_idxs
+    def __len__(self):
+        return self.trial
+
 
 
 class RandomSampler(Sampler):
@@ -127,6 +133,9 @@ class RandomSampler(Sampler):
                 episode_idxs.extend(index_dic_gallery[pid][:self.query_shot])
 
             yield episode_idxs
+    def __len__(self):
+        return self.trial
+
 
         
 # meta-training
