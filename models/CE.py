@@ -49,7 +49,7 @@ class CrossEntropyTraining(nn.Module):
         imgs = imgs.squeeze_().cuda()
         labels = labels.squeeze_().cuda()
         features = self.backbone(imgs)
-        score = self.val_test_classifier(features[5:], features[:5], labels[:15], **kwargs)
+        score = self.val_test_classifier(features[5:], features[:5], labels[:5], **kwargs)
         loss = F.cross_entropy(score, labels[5:])
         acc.append(accuracy(score, labels[5:])[0])
         loss /= batch_size
