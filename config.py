@@ -13,6 +13,21 @@ _C = CN()
 # Base config files to inherit from
 _C.BASE = ['']
 
+
+
+# fewshot settings
+_C.DATASET = 'xx'
+_C.DATA_ROOT = '/home/zhengwei/my_data/datasets'
+_C.FEWSHOT = CN()
+_C.FEWSHOT.NWAY = 5
+_C.FEWSHOT.KSHOT = 1
+_C.FEWSHOT.TRAIN_QUERY_SHOT = 15
+_C.FEWSHOT.TEST_QUERY_SHOT = 15
+_C.FEWSHOT.TRAIL = 1000
+
+
+
+
 # -----------------------------------------------------------------------------
 # Data settings
 # -----------------------------------------------------------------------------
@@ -26,7 +41,6 @@ _C.DATA.NUM_WORKERS = 8
 
 # Input image size
 _C.DATA.IMG_SIZE = 224
-
 
 # ImageNet settings
 _C.DATA.PATH_TO_WORDS = "data/words.txt"
