@@ -110,11 +110,8 @@ def train(config):
     for epoch in range(config.TRAIN.START_EPOCH, config.TRAIN.EPOCHS):
         step = train_one_epoch(config, model, train_dataloader, optimizer, epoch, lr_scheduler, step, 
                              None)
-        acc_current, loss = validate(config, valid_dataloader, model, epoch, None)
-        logger.info(f"Accuracy of the network on the validated images: {acc_current:.1f}%")
-        # return acc_meter.avg, loss_meter.avg, ci
-        test_acc, test_loss, ci = testing(config, test_loader, model)
-        logger.info(f"Accuracy of the test images: {test_acc:.1f}%+-{ci:.2f}")
+        acc_current, loss, ci = validate(config, valid_dataloader, model, epoch, None)
+        logger.info(f"Accuracy of the validation images: {acc_current:.1f}%+-{ci:.2f}")
 
         # is current accuracy in topK?
         topK = None
@@ -142,9 +139,8 @@ def train(config):
     total_time_str = str(datetime.timedelta(seconds=int(total_time)))
     logger.info('Training time {}'.format(total_time_str))
 
-    # test_acc, test_loss = test(config, test_loader, model)
-    # logger.info(f"Test Accuracy: {test_acc:.2f}%")
-
+    test_acc, test_loss, ci = validate(config, test_loader, model)
+    logger.info(f"Accuracy of the test images: {test_acc:.1f}%+-{ci:.2f}")
 
 
 def test(config):
@@ -254,7 +250,8 @@ def validate(config, data_loader, model, epoch=None, writer=None):
     batch_time = AverageMeter()
     loss_meter = AverageMeter()
     acc_meter = AverageMeter()
-
+    
+    accs = []
     end = time.time()
 
     # dataset.set_epoch()
@@ -269,8 +266,9 @@ def validate(config, data_loader, model, epoch=None, writer=None):
         dataset_index = 0
         support_imgs, query_imgs, support_labels, query_labels = batches        
         loss, acc = model.val_forward(support_imgs, query_imgs, support_labels, query_labels)
-        
+        accs.extend(acc)
         acc = torch.mean(torch.stack(acc))
+
 
         loss_meter.update(loss.item())
         acc_meter.update(acc.item())
@@ -289,13 +287,16 @@ def validate(config, data_loader, model, epoch=None, writer=None):
     logger.info(f' * Acc@1 {acc_meter.avg:.2f}')
     logger.info(f' * Loss {loss_meter.avg:.2f}')
     
+    accs = torch.stack(accs)
+    ci = (1.96*torch.std(accs)/math.sqrt(accs.shape[0])).item()
+    
     # if epoch is not None and writer is not None:
     #     writer.add_scalar("Loss/val_epoch", loss_meter.avg, epoch)
     #     writer.add_scalar("Acc/val_epoch", acc_meter.avg, epoch)
     # if epoch is not None:
     #     logger.info(f' * Acc@1 {acc_meter.avg:.2f}')
     #     logger.info(f' * Loss {loss_meter.avg:.2f}')
-    return acc_meter.avg, loss_meter.avg   
+    return acc_meter.avg, loss_meter.avg, ci
 
 @torch.no_grad()
 def testing(config, data_loader, model):
