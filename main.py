@@ -3,7 +3,8 @@ from config import get_config
 import os
 from logger import create_logger
 from data import create_torch_dataloader
-from data.dataloaders_new import make_fewshot_dataloader
+# from data.dataloaders_new import make_fewshot_dataloader
+from data.dataloaders_likeclipreid import make_dataloader, make_fewshot_dataloader
 from data.dataset_spec import Split
 import torch
 import numpy as np
@@ -55,13 +56,17 @@ def parse_option():
 
     return args, config
 
+# train_dataloader, valid_dataloader, test_loader, num_query, num_classes = make_fewshot_dataloader(config)
 
 def train(config):
     # train_dataloader, train_dataset  = create_torch_dataloader(Split.TRAIN, config)
     # valid_dataloader, valid_dataset = create_torch_dataloader(Split.VALID, config)
-
-    train_dataloader, valid_dataloader, test_loader, num_query, num_classes = make_fewshot_dataloader(config)
     
+    # for base
+    train_dataloader, _, valid_dataloader, query_loader, test_loader, num_query, num_classes, _, _ = make_dataloader(config)
+    # for novel
+    # train_loader, _, valid_dataloader, query_loader, gallery_loader, num_query, num_classes, _, _ = make_fewshot_dataloader(config)
+
     # writer = SummaryWriter(log_dir=config.OUTPUT)
 
     # num_classes = train_dataset.num_classes if hasattr(train_dataset, "num_classes") else None
@@ -107,8 +112,9 @@ def train(config):
                              None)
         acc_current, loss = validate(config, valid_dataloader, model, epoch, None)
         logger.info(f"Accuracy of the network on the validated images: {acc_current:.1f}%")
-        test_acc, test_loss = test(config, test_loader, model)
-        logger.info(f"Test Accuracy: {test_acc:.2f}%")
+        # return acc_meter.avg, loss_meter.avg, ci
+        test_acc, test_loss, ci = testing(config, test_loader, model)
+        logger.info(f"Accuracy of the test images: {test_acc:.1f}%+-{ci:.2f}")
 
         # is current accuracy in topK?
         topK = None
@@ -285,7 +291,7 @@ def validate(config, data_loader, model, epoch=None, writer=None):
     return acc_meter.avg, loss_meter.avg   
 
 @torch.no_grad()
-def testing(config, dataset,data_loader, model):
+def testing(config, data_loader, model):
     model.eval()
 
     batch_time = AverageMeter()
@@ -295,7 +301,7 @@ def testing(config, dataset,data_loader, model):
     end = time.time()
     accs = []
 
-    dataset.set_epoch()
+    # dataset.set_epoch()
     for idx, batches in enumerate(data_loader):
         dataset_index = 0
         imgs, labels, target_cam, target_view, _ = batches

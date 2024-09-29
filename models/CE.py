@@ -33,15 +33,18 @@ class CrossEntropyTraining(nn.Module):
         acc = [accuracy(score, labels)[0]]
         return loss, acc
 
-    def val_test_forward(self,img_tasks,label_tasks, *args, **kwargs):
+    def val_test_forward(self,img_tasks, label_tasks, *args, **kwargs):
         batch_size = len(img_tasks)
         loss = 0.
         acc = []
         for i, img_task in enumerate(img_tasks):
             support_features = self.backbone(img_task["support"].squeeze_().cuda())
+            
             query_features = self.backbone(img_task["query"].squeeze_().cuda())
+            
             score = self.val_test_classifier(query_features, support_features,
                                     label_tasks[i]["support"].squeeze_().cuda(), **kwargs)
+            
             loss += F.cross_entropy(score, label_tasks[i]["query"].squeeze_().cuda())
             acc.append(accuracy(score, label_tasks[i]["query"].cuda())[0])
         loss /= batch_size

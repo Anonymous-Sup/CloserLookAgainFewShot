@@ -234,13 +234,13 @@ class Sketchy(BaseImageDataset):
 
     dataset_dir = 'Sketchy'
 
-    def __init__(self, root='', verbose=True, pid_begin=0, NWAY=0, KSHOT=0, **kwargs):
+    def __init__(self, config=None, root='', verbose=True, pid_begin=0, **kwargs):
         super(Sketchy, self).__init__()
 
-        # choice for 'allway' and '5way'
-        self.training_mode = 'allway'
+        # self.training_mode = config.DATASETS.TRAINING_MODE # choice for 'base' and 'novel' or 'novel_few'
+        self.training_mode = 'base'
 
-        self.base_label2index, self.novel_label2index, self.selected_label2inds = buildLabelIndex(Way=5, seed=1)
+        self.base_label2index, self.novel_label2index, self.selected_label2inds = buildLabelIndex(Way=config.FEWSHOT.NWAY, seed=1)
 
         self.dataset_dir = osp.join(root, self.dataset_dir)
 
@@ -251,7 +251,7 @@ class Sketchy(BaseImageDataset):
         self.pid_begin = pid_begin
         
         train, val, query, gallery = self._process_dir(self.rgb_dir, self.sketch_dir, relabel=False, 
-                                                  training_mode=self.training_mode, number_pthots=KSHOT, number_sketches=KSHOT, random_seed=0)
+                                                  training_mode=self.training_mode, number_pthots=config.FEWSHOT.KSHOT, number_sketches=config.FEWSHOT.KSHOT, random_seed=0)
         if verbose:
             print("=> Sketchy dataset loaded")
             self.print_dataset_statistics(train, query, gallery, val)
@@ -293,8 +293,6 @@ class Sketchy(BaseImageDataset):
         query_dataset = []
         gallery_dataset = []
 
-
-
         for photo_class_name in sorted(photo_all_class):
              # first get the class label
             photo_class = osp.basename(photo_class_name)  # like jellyfish
@@ -305,50 +303,51 @@ class Sketchy(BaseImageDataset):
             sketch_class_name = osp.join(sketch_path, photo_class)
             draw_paths = glob.glob(osp.join(sketch_class_name, "*.png"))
 
-            # get the class label
-            train_subset = train_classes_split
 
-            if photo_class in train_subset:
-                
-                assert photo_class in self.base_label2index, "photo class {} not in label set".format(photo_class)
-                pid = self.base_label2index[photo_class]
+            if training_mode == 'base':
+                # get the class label
+                train_subset = train_classes_split
 
-                # Shuffle the data to ensure random split
-                random.shuffle(photo_paths)
+                if photo_class in train_subset:
+                    
+                    assert photo_class in self.base_label2index, "photo class {} not in label set".format(photo_class)
+                    pid = self.base_label2index[photo_class]
 
-                # Calculate the split indices
-                num_photos = len(photo_paths)
+                    # Shuffle the data to ensure random split
+                    random.shuffle(photo_paths)
 
-                train_split_idx_photos = int(num_photos * 0.6)
-                val_split_idx_photos = int(num_photos * 0.8)
+                    # Calculate the split indices
+                    num_photos = len(photo_paths)
 
-                # Assign data to training, validation, and test sets
-                train_photo_paths = photo_paths[:train_split_idx_photos]
-                val_photo_paths = photo_paths[train_split_idx_photos:val_split_idx_photos]
-                test_photo_paths = photo_paths[val_split_idx_photos:]
+                    train_split_idx_photos = int(num_photos * 0.6)
+                    val_split_idx_photos = int(num_photos * 0.8)
 
-
-                # Add the training data
-                for photo_path in train_photo_paths:
-                    train_dataset.append((photo_path, self.pid_begin + pid, 0, 'rgb'))
-
-                # for draw_path in train_sketch_paths:
-                #     train_dataset.append((draw_path, self.pid_begin + pid, 0, 'sketch'))
-
-                # Add the validation data
-                for photo_path in val_photo_paths:
-                    val_dataset.append((photo_path, self.pid_begin + pid, 0, 'rgb'))
-                # for draw_path in val_sketch_paths:
-                #     val_dataset.append((draw_path, self.pid_begin + pid, 0, 'sketch'))
+                    # Assign data to training, validation, and test sets
+                    train_photo_paths = photo_paths[:train_split_idx_photos]
+                    val_photo_paths = photo_paths[train_split_idx_photos:val_split_idx_photos]
+                    test_photo_paths = photo_paths[val_split_idx_photos:]
 
 
-                # # Add the test data (gallery and query)
-                # for photo_path in test_photo_paths:
-                #     gallery_dataset.append((photo_path, self.pid_begin + pid, 0, 'rgb'))
-                # for draw_path in draw_paths:
-                #     query_dataset.append((draw_path, self.pid_begin + pid, 0, 'sketch'))
+                    # Add the training data
+                    for photo_path in train_photo_paths:
+                        train_dataset.append((photo_path, self.pid_begin + pid, 0, 'rgb'))
+
+                    # for draw_path in train_sketch_paths:
+                    #     train_dataset.append((draw_path, self.pid_begin + pid, 0, 'sketch'))
+
+                    # Add the validation data
+                    for photo_path in val_photo_paths:
+                        val_dataset.append((photo_path, self.pid_begin + pid, 0, 'rgb'))
+                    # for draw_path in val_sketch_paths:
+                    #     val_dataset.append((draw_path, self.pid_begin + pid, 0, 'sketch'))
+
+                    # Add the test data (gallery and query)
+                    for photo_path in test_photo_paths:
+                        gallery_dataset.append((photo_path, self.pid_begin + pid, 0, 'rgb'))
+                    for draw_path in draw_paths:
+                        query_dataset.append((draw_path, self.pid_begin + pid, 0, 'sketch'))
     
-            if training_mode == 'allway':
+            elif training_mode == 'novel':
                 # get the class label
                 train_subset = novel_classes_split+val_classes_split
                 if photo_class in train_subset:
@@ -371,9 +370,9 @@ class Sketchy(BaseImageDataset):
                     selected_draws = random.sample(draw_paths, M)
 
                     for photo_path in selected_photos:
-                        query_dataset.append((photo_path, self.pid_begin + pid, 0, 'rgb'))
+                        train_dataset.append((photo_path, self.pid_begin + pid, 0, 'rgb'))
                     for draw_path in selected_draws:
-                        query_dataset.append((draw_path, self.pid_begin + pid, 0, 'sketch'))
+                        train_dataset.append((draw_path, self.pid_begin + pid, 0, 'sketch'))
                     
                     # Remaining photos and sketches for testing
                     remaining_photos = [p for p in photo_paths if p not in selected_photos]
@@ -381,11 +380,12 @@ class Sketchy(BaseImageDataset):
 
                     for photo_path in remaining_photos:
                         gallery_dataset.append((photo_path, self.pid_begin + pid, 0, 'rgb'))
+                        val_dataset.append((photo_path, self.pid_begin + pid, 0, 'rgb'))
                     for draw_path in remaining_draws:
-                        gallery_dataset.append((draw_path, self.pid_begin + pid, 0, 'sketch'))
-
+                        query_dataset.append((draw_path, self.pid_begin + pid, 0, 'sketch'))
+                        val_dataset.append((draw_path, self.pid_begin + pid, 0, 'rgb'))
             
-            elif training_mode == '5way':
+            elif training_mode == 'novel_few':
                 if photo_class in self.selected_label2inds.keys():
                     pid = self.selected_label2inds[photo_class]
                     
@@ -405,9 +405,9 @@ class Sketchy(BaseImageDataset):
                     selected_draws = random.sample(draw_paths, M)
 
                     for photo_path in selected_photos:
-                        query_dataset.append((photo_path, self.pid_begin + pid, 0, 'rgb'))
+                        train_dataset.append((photo_path, self.pid_begin + pid, 0, 'rgb'))
                     for draw_path in selected_draws:
-                        query_dataset.append((draw_path, self.pid_begin + pid, 0, 'sketch'))
+                        train_dataset.append((draw_path, self.pid_begin + pid, 0, 'sketch'))
                     
                     # Remaining photos and sketches for testing
                     remaining_photos = [p for p in photo_paths if p not in selected_photos]
@@ -415,8 +415,10 @@ class Sketchy(BaseImageDataset):
 
                     for photo_path in remaining_photos:
                         gallery_dataset.append((photo_path, self.pid_begin + pid, 0, 'rgb'))
+                        val_dataset.append((photo_path, self.pid_begin + pid, 0, 'rgb'))
                     for draw_path in remaining_draws:
-                        gallery_dataset.append((draw_path, self.pid_begin + pid, 0, 'sketch'))
+                        query_dataset.append((draw_path, self.pid_begin + pid, 0, 'sketch'))
+                        val_dataset.append((draw_path, self.pid_begin + pid, 0, 'rgb'))
 
         return train_dataset, val_dataset, query_dataset, gallery_dataset
     
