@@ -261,14 +261,14 @@ def validate(config, data_loader, model, epoch=None, writer=None):
     # dataset.set_epoch()
 
     for idx, batches in enumerate(data_loader):
+        
+        if idx >= 3:
+            logger.info("Only evaluate {} tasks".format(idx*batches[0].shape[0]))
+            break
+
         # dataset_index, imgs, labels = batches
         dataset_index = 0
-        support_imgs, query_imgs, support_labels, query_labels = batches
-        logger.info(f"support_imgs: {support_imgs.shape}")
-        logger.info(f"query_imgs: {query_imgs.shape}")
-        logger.info(f"support_labels: {support_labels.shape}")
-        logger.info(f"query_labels: {query_labels.shape}")
-        
+        support_imgs, query_imgs, support_labels, query_labels = batches        
         loss, acc = model.val_forward(support_imgs, query_imgs, support_labels, query_labels)
         
         acc = torch.mean(torch.stack(acc))
