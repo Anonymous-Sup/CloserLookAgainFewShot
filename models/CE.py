@@ -14,9 +14,9 @@ class CrossEntropyTraining(nn.Module):
                     (For CE, the number of datasets must be 1)
         """
         super().__init__()
-        assert len(num_classes) == 1
+        # assert len(num_classes) == 1
         self.backbone = get_backbone(config.MODEL.BACKBONE, *config.MODEL.BACKBONE_HYPERPARAMETERS)
-        self.classifier = nn.Linear(self.backbone.outdim, num_classes[0])
+        self.classifier = nn.Linear(self.backbone.outdim, num_classes)
         self.val_test_classifier = get_classifier(config.MODEL.CLASSIFIER, *config.MODEL.CLASSIFIER_PARAMETERS)
     
     
