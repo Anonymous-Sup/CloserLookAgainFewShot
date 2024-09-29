@@ -191,7 +191,9 @@ def train_one_epoch(config, model, data_loader, optimizer, epoch, lr_scheduler, 
     pathss = []
     all_label = []
     for idx, batches in enumerate(data_loader):
-        dataset_index, imgs, labels = batches
+        dataset_index = 0
+        imgs, labels, target_cam, target_view, _ = batches
+
         loss, acc = model.train_forward(imgs, labels, dataset_index)
         acc = torch.mean(torch.stack(acc))
         loss.backward()
@@ -248,8 +250,9 @@ def validate(config, data_loader, model, epoch=None, writer=None):
     # dataset.set_epoch()
 
     for idx, batches in enumerate(data_loader):
-        dataset_index, imgs, labels = batches
-        
+        # dataset_index, imgs, labels = batches
+        dataset_index = 0
+        imgs, labels, target_cam, target_view, _ = batches
         
         loss, acc = model.val_forward(imgs, labels, dataset_index)
         
@@ -290,7 +293,8 @@ def testing(config, dataset,data_loader, model):
 
     dataset.set_epoch()
     for idx, batches in enumerate(data_loader):
-        dataset_index, imgs, labels = batches
+        dataset_index = 0
+        imgs, labels, target_cam, target_view, _ = batches
 
         loss, acc = model.test_forward(imgs, labels, dataset_index)
         accs.extend(acc)
