@@ -7,8 +7,8 @@ Data = {}
 Data["FEWSHOT"] = {}
 Data["FEWSHOT"]["NWAY"] = 5
 Data["FEWSHOT"]["KSHOT"] = 1
-Data["FEWSHOT"]["TRAIN_QUERY_SHOT"] = 15
-Data["FEWSHOT"]["TEST_QUERY_SHOT"] = 15
+Data["FEWSHOT"]["TRAIN_QUERY_SHOT"] = 5
+Data["FEWSHOT"]["TEST_QUERY_SHOT"] = 5
 Data["FEWSHOT"]["TRAIL"] = 1000
 
 Data["DATASET"] = "sketchy"
