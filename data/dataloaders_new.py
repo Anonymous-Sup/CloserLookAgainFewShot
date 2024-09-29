@@ -51,7 +51,7 @@ def val_collate_fn(batch):
     imgs, pids, camids, viewids, img_paths = zip(*batch)
     # viewids = torch.tensor(viewids, dtype=torch.int64)
     camids_batch = torch.tensor(camids, dtype=torch.int64)
-    return torch.stack(imgs, dim=0), pids, camids, camids_batch, viewids, img_paths
+    return torch.stack(imgs, dim=0), pids, camids, viewids, img_paths
 
 
 SIZE_TRAIN = [256,128]
