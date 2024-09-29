@@ -2,25 +2,24 @@ import yaml
 import os
 
 Data = {}
+
+
+Data["FEWSHOT"] = {}
+Data["FEWSHOT"]["NWAY"] = 5
+Data["FEWSHOT"]["KSHOT"] = 1
+Data["FEWSHOT"]["TRAIN_QUERY_SHOT"] = 15
+Data["FEWSHOT"]["TEST_QUERY_SHOT"] = 15
+Data["FEWSHOT"]["TRAIL"] = 1000
+
 Data["DATA"] = {}
-
-
 Data["DATA"]["TRAIN"] = {}
-
 Data["DATA"]["TRAIN"]["DATASET_ROOTS"] = ["/home/zhengwei/my_data/datasets"]
 Data["DATA"]["TRAIN"]["DATASET_NAMES"] = ["sketchy"]
-
 Data["DATA"]["TRAIN"]["IS_EPISODIC"] = False
 
-
-
-
 Data["DATA"]["VALID"] = {}
-
 Data["DATA"]["VALID"]["DATASET_ROOTS"] = ["/home/zhengwei/my_data/datasets"]
 Data["DATA"]["VALID"]["DATASET_NAMES"] = ["sketchy"]
-
-
 
 Data["DATA"]["VALID"]["EPISODE_DESCR_CONFIG"] = {}
 Data["DATA"]["VALID"]["EPISODE_DESCR_CONFIG"]["NUM_WAYS"] = 5
@@ -57,6 +56,7 @@ Data["TRAIN"]["EPOCHS"] = 60
 Data["DATA"]["TRAIN"]["BATCH_SIZE"] = 256
 
 Data["TRAIN"]["BASE_LR"] = 0.1*Data["DATA"]["TRAIN"]["BATCH_SIZE"]/128
+
 
 
 

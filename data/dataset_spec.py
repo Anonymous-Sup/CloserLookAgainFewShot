@@ -37,6 +37,7 @@ from scipy.io import loadmat
 from .ImageNet_graph_operations import *
 import json
 import operator
+from .skechy_fewshot import Sketchy
 
 # The seed is fixed, in order to ensure reproducibility of the split generation,
 # exactly matching the original Meta-Dataset code.
@@ -162,6 +163,13 @@ def create_spec(dataset_name, root, path_to_words=None, path_to_is_a = None, pat
     return create_cifar100_spec(root)
   elif dataset_name == "miniImageNet":
     return create_miniImageNet_spec(root)
+  elif dataset_name == "sketchy":
+    return create_skechy_spec(root)
+
+
+def create_skechy_spec(root):
+  Sketchy(root)
+
 
 
 def create_DTD_spec(root):
@@ -240,8 +248,6 @@ def create_QuickDraw_spec(root):
   # of the data, respectively.
   train_inds, valid_inds, test_inds = gen_rand_split_inds(
         num_train_classes, num_valid_classes, num_test_classes, _rng)
-
-
 
 
   splits = {

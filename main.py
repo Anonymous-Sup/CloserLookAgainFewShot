@@ -3,6 +3,7 @@ from config import get_config
 import os
 from logger import create_logger
 from data import create_torch_dataloader
+from data.dataloaders_new import make_fewshot_dataloader
 from data.dataset_spec import Split
 import torch
 import numpy as np
@@ -56,11 +57,14 @@ def parse_option():
 
 
 def train(config):
-    train_dataloader, train_dataset  = create_torch_dataloader(Split.TRAIN, config)
-    valid_dataloader, valid_dataset = create_torch_dataloader(Split.VALID, config)
+    # train_dataloader, train_dataset  = create_torch_dataloader(Split.TRAIN, config)
+    # valid_dataloader, valid_dataset = create_torch_dataloader(Split.VALID, config)
+
+    train_dataloader, valid_dataloader, test_loader, num_query, num_classes = make_fewshot_dataloader(config)
+    
     # writer = SummaryWriter(log_dir=config.OUTPUT)
 
-    num_classes = train_dataset.num_classes if hasattr(train_dataset, "num_classes") else None
+    # num_classes = train_dataset.num_classes if hasattr(train_dataset, "num_classes") else None
 
     logger.info(f"Creating model:{config.MODEL.TYPE}/{config.MODEL.NAME}")
 
@@ -91,13 +95,9 @@ def train(config):
 
     if config.MODEL.PRETRAINED:
         load_pretrained(config, model, logger)
-        acc1, loss = validate(config, valid_dataset, valid_dataloader, model)
+        acc1, loss = validate(config, valid_dataloader, model)
         logger.info(f"Accuracy of the network on the {len(valid_dataloader)} test images: {acc1:.1f}%")
 
-    
-
-
-    
 
     logger.info("Start training")
     start_time = time.time()
@@ -105,9 +105,9 @@ def train(config):
     
 
     for epoch in range(config.TRAIN.START_EPOCH, config.TRAIN.EPOCHS):
-        step = train_one_epoch(config, model, train_dataset, train_dataloader, optimizer, epoch, lr_scheduler, step, 
+        step = train_one_epoch(config, model, train_dataloader, optimizer, epoch, lr_scheduler, step, 
                              None)
-        acc_current, loss = validate(config, valid_dataset, valid_dataloader, model, epoch, None)
+        acc_current, loss = validate(config, valid_dataloader, model, epoch, None)
         logger.info(f"Accuracy of the network on the validated images: {acc_current:.1f}%")
 
         # is current accuracy in topK?
@@ -176,7 +176,7 @@ def test(config):
 
 
 
-def train_one_epoch(config, model, dataset, data_loader, optimizer, epoch, lr_scheduler, step, writer=None):
+def train_one_epoch(config, model, data_loader, optimizer, epoch, lr_scheduler, step, writer=None):
     model.train()
     optimizer.zero_grad()
 
@@ -187,7 +187,7 @@ def train_one_epoch(config, model, dataset, data_loader, optimizer, epoch, lr_sc
     start = time.time()
     end = time.time()
 
-    dataset.set_epoch()
+    # dataset.set_epoch()
     pathss = []
     all_label = []
     for idx, batches in enumerate(data_loader):
@@ -236,7 +236,7 @@ def train_one_epoch(config, model, dataset, data_loader, optimizer, epoch, lr_sc
     return step
 
 @torch.no_grad()
-def validate(config, dataset, data_loader, model, epoch=None, writer=None):
+def validate(config, data_loader, model, epoch=None, writer=None):
     model.eval()
 
     batch_time = AverageMeter()
@@ -245,7 +245,7 @@ def validate(config, dataset, data_loader, model, epoch=None, writer=None):
 
     end = time.time()
 
-    dataset.set_epoch()
+    # dataset.set_epoch()
 
     for idx, batches in enumerate(data_loader):
         dataset_index, imgs, labels = batches
