@@ -176,7 +176,7 @@ def test(config):
 
 
 
-def train_one_epoch(config, model, dataset, data_loader, optimizer, epoch, lr_scheduler, step, None):
+def train_one_epoch(config, model, dataset, data_loader, optimizer, epoch, lr_scheduler, step, writer=None):
     model.train()
     optimizer.zero_grad()
 
