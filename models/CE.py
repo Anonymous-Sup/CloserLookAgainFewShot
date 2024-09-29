@@ -35,20 +35,16 @@ class CrossEntropyTraining(nn.Module):
     def val_test_forward(self, support_imgs, query_imgs, support_labels, query_labels, *args, **kwargs):
         loss = 0.
         acc = []
-        support_imgs = support_imgs.squeeze_().cuda()
-        query_imgs = query_imgs.squeeze_().cuda()
-        support_labels = support_labels.squeeze_().cuda()
-        query_labels = query_labels.squeeze_().cuda()
-
-        support_features = self.backbone(support_imgs)
-        query_features = self.backbone(query_imgs)
-        if support_features.dim() == 4:
-            support_features = F.adaptive_avg_pool2d(support_features, 1).squeeze_(-1).squeeze_(-1)
-            query_features = F.adaptive_avg_pool2d(query_features, 1).squeeze_(-1).squeeze_(-1)
-
-        score = self.val_test_classifier(query_features, support_features, support_labels, **kwargs)
-        loss = F.cross_entropy(score, query_labels)
-        acc.append(accuracy(score, query_labels)[0])
+        for i , img_task in enumerate(zip(support_imgs, query_imgs, support_labels, query_labels)):
+            support_img, query_img, _, _ = img_task
+            support_features = self.backbone(support_img.squeeze_().cuda())
+            query_features = self.backbone(query_img.squeeze_().cuda())
+            if support_features.dim() == 4:
+                support_features = F.adaptive_avg_pool2d(support_features, 1).squeeze_(-1).squeeze_(-1)
+                query_features = F.adaptive_avg_pool2d(query_features, 1).squeeze_(-1).squeeze_(-1)
+            score = self.val_test_classifier(query_features, support_features, support_labels[i].squeeze_().cuda(), **kwargs)
+            loss += F.cross_entropy(score, query_labels[i].squeeze_().cuda())
+            acc.append(accuracy(score, query_labels[i].cuda())[0])
         # for i, img_task in enumerate(img_tasks):
         #     support_features = self.backbone(img_task["support"].squeeze_().cuda())
             
