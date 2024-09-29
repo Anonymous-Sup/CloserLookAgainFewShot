@@ -86,7 +86,7 @@ def make_dataloader(cfg):
 
     num_workers = 8
 
-    dataset = __factory[cfg.DATASETS](root=cfg.DATA_ROOT, config=cfg)
+    dataset = __factory[cfg.DATASET](root=cfg.DATA_ROOT, config=cfg)
 
     train_set = ImageDataset(dataset.train, train_transforms)
     train_set_normal = ImageDataset(dataset.train, val_transforms)
@@ -149,7 +149,7 @@ def make_fewshot_dataloader(cfg):
 
     num_workers = 8
 
-    dataset = __factory[cfg.DATASETS](root=cfg.DATA_ROOT, config=cfg)
+    dataset = __factory[cfg.DATASET](root=cfg.DATA_ROOT, config=cfg)
     
     train_set = ImageDataset(dataset.train, train_transforms)
     train_set_normal = ImageDataset(dataset.train, val_transforms)
