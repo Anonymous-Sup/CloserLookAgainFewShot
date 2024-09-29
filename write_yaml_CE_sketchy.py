@@ -44,11 +44,11 @@ Data["OUTPUT"] = "./nohup_logs/base_sketchy"
 
 Data["MODEL"] = {}
 Data["MODEL"]["TYPE"] = "CE"
-Data["MODEL"]["CLASSIFIER"] = "proto_head"
-Data["MODEL"]["NAME"] = "Res12_CE"
+Data["MODEL"]["CLASSIFIER"] = "finetune"
+Data["MODEL"]["NAME"] = "vit_CE"
 
 
-Data["MODEL"]["BACKBONE"] = 'resnet12'
+Data["MODEL"]["BACKBONE"] = 'vit'
 
 Data["DATA"]["IMG_SIZE"] = 224
 Data["DATA"]["NUM_WORKERS"] = 8
@@ -65,5 +65,5 @@ Data["TRAIN"]["BASE_LR"] = 0.1*Data["DATA"]["TRAIN"]["BATCH_SIZE"]/128
 if not os.path.exists('./configs/sketchy'):
    os.makedirs('./configs/sketchy')
 
-with open('./configs/sketchy/res12.yaml', 'w') as f:
+with open('./configs/sketchy/vit.yaml', 'w') as f:
    yaml.dump(data=Data, stream=f)
