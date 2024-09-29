@@ -3,8 +3,8 @@
 # python main.py --cfg configs/evaluation/finetune_res12_CE.yaml --tag test
 
 # training CE model
-python write_yaml_CE.py
-python main.py --cfg configs/CE/miniImageNet_res12.yaml --tag main
+python write_yaml_CE_sketchy.py
+python main.py --cfg configs/CE/sketchy_res12.yaml --tag main
 
 # training PN model
 # python write_yaml_PN.py
