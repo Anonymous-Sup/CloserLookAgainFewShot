@@ -108,7 +108,6 @@ def train(config):
     start_time = time.time()
 
     for epoch in range(config.TRAIN.START_EPOCH, config.TRAIN.EPOCHS):
-        acc_current, loss = validate(config, valid_dataloader, model, epoch, None)
         step = train_one_epoch(config, model, train_dataloader, optimizer, epoch, lr_scheduler, step, 
                              None)
         acc_current, loss = validate(config, valid_dataloader, model, epoch, None)
@@ -262,9 +261,9 @@ def validate(config, data_loader, model, epoch=None, writer=None):
 
     for idx, batches in enumerate(data_loader):
         
-        if idx >= 3:
-            logger.info("Only evaluate {} tasks".format(idx*batches[0].shape[0]))
-            break
+        # if idx >= 3:
+        #     logger.info("Only evaluate {} tasks".format(idx*batches[0].shape[0]))
+        #     break
 
         # dataset_index, imgs, labels = batches
         dataset_index = 0
@@ -280,19 +279,22 @@ def validate(config, data_loader, model, epoch=None, writer=None):
         batch_time.update(time.time() - end)
         end = time.time()
 
-        if idx % config.PRINT_FREQ == 0:
-            logger.info(
-                f'Val: [{idx+1}/{len(data_loader)}]\t'
-                f'Time {batch_time.val:.2f} ({batch_time.avg:.2f})\t'
-                f'Loss {loss_meter.val:.2f} ({loss_meter.avg:.2f})\t'
-                f'Acc@1 {acc_meter.val:.2f} ({acc_meter.avg:.2f})\t')
+        # if idx % config.PRINT_FREQ == 0:
+        #     logger.info(
+        #         f'Val: [{idx+1}/{len(data_loader)}]\t'
+        #         f'Time {batch_time.val:.2f} ({batch_time.avg:.2f})\t'
+        #         f'Loss {loss_meter.val:.2f} ({loss_meter.avg:.2f})\t'
+        #         f'Acc@1 {acc_meter.val:.2f} ({acc_meter.avg:.2f})\t')
+    
     logger.info(f' * Acc@1 {acc_meter.avg:.2f}')
+    logger.info(f' * Loss {loss_meter.avg:.2f}')
+    
     # if epoch is not None and writer is not None:
     #     writer.add_scalar("Loss/val_epoch", loss_meter.avg, epoch)
     #     writer.add_scalar("Acc/val_epoch", acc_meter.avg, epoch)
-    if epoch is not None:
-        logger.info(f' * Acc@1 {acc_meter.avg:.2f}')
-        logger.info(f' * Loss {loss_meter.avg:.2f}')
+    # if epoch is not None:
+    #     logger.info(f' * Acc@1 {acc_meter.avg:.2f}')
+    #     logger.info(f' * Loss {loss_meter.avg:.2f}')
     return acc_meter.avg, loss_meter.avg   
 
 @torch.no_grad()
