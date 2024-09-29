@@ -44,7 +44,7 @@ Data["OUTPUT"] = "./nohup_logs/base_sketchy"
 
 Data["MODEL"] = {}
 Data["MODEL"]["TYPE"] = "CE"
-Data["MODEL"]["CLASSIFIER"] = "finetune"
+Data["MODEL"]["CLASSIFIER"] = "proto_head"
 Data["MODEL"]["NAME"] = "vit_CE"
 
 
