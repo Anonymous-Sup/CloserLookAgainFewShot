@@ -4,7 +4,7 @@
 
 # training CE model
 python write_yaml_CE_sketchy.py
-python main.py --cfg configs/CE/sketchy_res12.yaml --tag main
+python main.py --cfg configs/sketchy/res12.yaml --tag main
 
 # training PN model
 # python write_yaml_PN.py
