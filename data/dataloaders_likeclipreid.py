@@ -8,7 +8,7 @@ from PIL import Image
 # from .samplers import FewshotBatchSampler, RandomSampler, ValSampler
 from .sampler import FewshotSampler, RandomIdentitySampler
 
-from .bases import ImageDataset
+from .bases import ImageDataset, FEWSHOT_ImageDataset
 from .skechy_fewshot import Sketchy
 
 
@@ -49,12 +49,41 @@ def train_collate_fn(batch):
     camids = torch.tensor(camids, dtype=torch.int64)
     return torch.stack(imgs, dim=0), pids, camids, viewids, img_paths
 
+# def val_collate_fn(batch):
+#     imgs, pids, camids, viewids, img_paths = zip(*batch)
+#     pids = torch.tensor(pids, dtype=torch.int64)
+#     # viewids = torch.tensor(viewids, dtype=torch.int64)
+#     camids_batch = torch.tensor(camids, dtype=torch.int64)
+#     return torch.stack(imgs, dim=0), pids, camids, viewids, img_paths
+
 def val_collate_fn(batch):
-    imgs, pids, camids, viewids, img_paths = zip(*batch)
-    pids = torch.tensor(pids, dtype=torch.int64)
-    # viewids = torch.tensor(viewids, dtype=torch.int64)
-    camids_batch = torch.tensor(camids, dtype=torch.int64)
-    return torch.stack(imgs, dim=0), pids, camids, viewids, img_paths
+    """
+    Handles both standard and few-shot batch structures.
+    
+    If it's a standard batch, the function will behave as usual.
+    If it's a few-shot batch, it will return the support and query sets separately.
+    """
+    # Check if the first element is a few-shot sample by checking if batch[0] contains two sets (support and query)
+    if len(batch[0]) == 4:
+        # Few-shot mode
+        support_sets, query_sets, support_labels, query_labels = zip(*batch)
+        
+        # Stack support sets and query sets separately
+        support_sets = torch.stack(support_sets, dim=0)
+        query_sets = torch.stack(query_sets, dim=0)
+        
+        # Stack labels for support and query sets
+        support_labels = torch.stack(support_labels, dim=0)
+        query_labels = torch.stack(query_labels, dim=0)
+
+        return support_sets, query_sets, support_labels, query_labels
+    
+    else:
+        # Standard mode
+        imgs, pids, camids, viewids, img_paths = zip(*batch)
+        pids = torch.tensor(pids, dtype=torch.int64)
+        camids_batch = torch.tensor(camids, dtype=torch.int64)
+        return torch.stack(imgs, dim=0), pids, camids_batch, viewids, img_paths
 
 
 SIZE_TRAIN = [256,128]
@@ -88,8 +117,8 @@ def make_dataloader(cfg):
 
     dataset = __factory[cfg.DATASET](root=cfg.DATA_ROOT, config=cfg)
 
-    train_set = ImageDataset(dataset.train, train_transforms)
-    train_set_normal = ImageDataset(dataset.train, val_transforms)
+    train_set = FEWSHOT_ImageDataset(dataset.train, train_transforms, is_few_shot=False)
+    train_set_normal = FEWSHOT_ImageDataset(dataset.train, val_transforms)
     num_classes = dataset.num_train_pids
     cam_num = dataset.num_train_cams
     view_num = dataset.num_train_vids
@@ -100,7 +129,7 @@ def make_dataloader(cfg):
         num_workers=num_workers, collate_fn=train_collate_fn
     )
 
-    val_set = ImageDataset(dataset.val, val_transforms)
+    val_set = FEWSHOT_ImageDataset(dataset.val, val_transforms, is_few_shot=True, n_support=5, n_query=15)
     val_loader = DataLoader(
         val_set, batch_size=128, shuffle=False, num_workers=num_workers,
         collate_fn=val_collate_fn
@@ -111,13 +140,13 @@ def make_dataloader(cfg):
         collate_fn=train_collate_fn)
 
 
-    query_set = ImageDataset(dataset.query, val_transforms)
+    query_set = FEWSHOT_ImageDataset(dataset.query, val_transforms, is_few_shot=True, n_support=5, n_query=15)
     query_loader = DataLoader(
         query_set, batch_size=128, shuffle=False, num_workers=num_workers,
         collate_fn=val_collate_fn
     )
 
-    gallery_set = ImageDataset(dataset.gallery, val_transforms)
+    gallery_set = FEWSHOT_ImageDataset(dataset.gallery, val_transforms, is_few_shot=True, n_support=5, n_query=15)
     gallery_loader = DataLoader(
         gallery_set, batch_size=128, shuffle=False, num_workers=num_workers,
         collate_fn=val_collate_fn

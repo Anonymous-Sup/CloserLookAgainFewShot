@@ -262,9 +262,9 @@ def validate(config, data_loader, model, epoch=None, writer=None):
     for idx, batches in enumerate(data_loader):
         # dataset_index, imgs, labels = batches
         dataset_index = 0
-        imgs, labels, target_cam, target_view, _ = batches
+        support_imgs, query_imgs, support_labels, query_labels = batches
         
-        loss, acc = model.val_forward(imgs, labels, dataset_index)
+        loss, acc = model.val_forward(support_imgs, query_imgs, support_labels, query_labels)
         
         acc = torch.mean(torch.stack(acc))
 

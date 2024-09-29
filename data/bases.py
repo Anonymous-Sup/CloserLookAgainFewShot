@@ -6,6 +6,8 @@ import random
 import torch
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
+import collections
+import numpy as np
 
 def read_image(img_path):
     """Keep reading image until succeed.
@@ -95,6 +97,7 @@ class ImageDataset(Dataset):
         return len(self.dataset)
 
     def __getitem__(self, index):
+
         img_path, pid, camid, trackid = self.dataset[index]
         img = read_image(img_path)
 
@@ -102,3 +105,81 @@ class ImageDataset(Dataset):
             img = self.transform(img)
 
         return img, pid, camid, trackid, img_path.split('/')[-1]
+    
+
+class FEWSHOT_ImageDataset(Dataset):
+    def __init__(self, dataset, transform=None, is_few_shot=False, n_support=5, n_query=15, seed=0):
+        """
+        dataset: a list of (img_path, pid, camid, trackid)
+        transform: image transformations
+        is_few_shot: whether to use few-shot learning structure
+        n_support: number of support images
+        n_query: number of query images
+        seed: random seed for reproducibility
+        """
+        self.dataset = dataset
+        self.transform = transform
+        self.is_few_shot = is_few_shot
+        self.n_support = n_support
+        self.n_query = n_query
+        self._rng = np.random.RandomState(seed)
+        self.class_to_indices = self._group_by_class()
+
+    def _group_by_class(self):
+        """Group dataset indices by class (pid)"""
+        class_to_indices = collections.defaultdict(list)
+        for index, (_, pid, _, _) in enumerate(self.dataset):
+            class_to_indices[pid].append(index)
+        return class_to_indices
+
+    def __len__(self):
+        return len(self.dataset)
+
+    def __getitem__(self, index):
+        if not self.is_few_shot:
+            # Regular dataset structure
+            img_path, pid, camid, trackid = self.dataset[index]
+            img = read_image(img_path)
+            if self.transform is not None:
+                img = self.transform(img)
+            return img, pid, camid, trackid, img_path.split('/')[-1]
+        else:
+            # Few-shot structure
+           # Few-shot structure: directly use the pid from the dataset without recalculating it
+            indices = self._rng.choice(self.class_to_indices[self.dataset[index][1]], self.n_support + self.n_query, replace=False)
+            support_indices = indices[:self.n_support]
+            query_indices = indices[self.n_support:]
+
+            # pid = list(self.class_to_indices.keys())[index % len(self.class_to_indices)]
+            # indices = self._rng.choice(self.class_to_indices[pid], self.n_support + self.n_query, replace=False)
+            # support_indices = indices[:self.n_support]
+            # query_indices = indices[self.n_support:]
+            
+            support_set = []
+            query_set = []
+            support_labels = []
+            query_labels = []
+            
+            for i in support_indices:
+                img_path, pid, camid, trackid = self.dataset[i]
+                img = read_image(img_path)
+                if self.transform is not None:
+                    img = self.transform(img)
+                support_set.append(img)
+                support_labels.append(pid)
+            
+            for i in query_indices:
+                img_path, pid, camid, trackid = self.dataset[i]
+                img = read_image(img_path)
+                if self.transform is not None:
+                    img = self.transform(img)
+                query_set.append(img)
+                query_labels.append(pid)
+                
+            support_set = torch.stack(support_set)
+            query_set = torch.stack(query_set)
+            support_labels = torch.tensor(support_labels, dtype=torch.int64)
+            query_labels = torch.tensor(query_labels, dtype=torch.int64)
+
+            
+            return support_set, query_set, support_labels, query_labels
