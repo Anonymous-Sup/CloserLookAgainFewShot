@@ -56,7 +56,7 @@ Data["GPU_ID"] = 0
 Data["TRAIN"] = {}
 Data["TRAIN"]["EPOCHS"] = 60
 
-Data["DATA"]["TRAIN"]["BATCH_SIZE"] = 32
+Data["DATA"]["TRAIN"]["BATCH_SIZE"] = 64
 
 Data["TRAIN"]["BASE_LR"] = 0.1*Data["DATA"]["TRAIN"]["BATCH_SIZE"]/128
 
