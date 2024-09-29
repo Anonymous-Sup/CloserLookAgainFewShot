@@ -16,7 +16,7 @@ from optimizer import build_optimizer, build_scheduler
 import time
 import math
 
-from torch.utils.tensorboard import SummaryWriter
+# from torch.utils.tensorboard import SummaryWriter
 
 def setup_seed(seed):
     """
@@ -58,7 +58,7 @@ def parse_option():
 def train(config):
     train_dataloader, train_dataset  = create_torch_dataloader(Split.TRAIN, config)
     valid_dataloader, valid_dataset = create_torch_dataloader(Split.VALID, config)
-    writer = SummaryWriter(log_dir=config.OUTPUT)
+    # writer = SummaryWriter(log_dir=config.OUTPUT)
 
     num_classes = train_dataset.num_classes if hasattr(train_dataset, "num_classes") else None
 
@@ -106,8 +106,8 @@ def train(config):
 
     for epoch in range(config.TRAIN.START_EPOCH, config.TRAIN.EPOCHS):
         step = train_one_epoch(config, model, train_dataset, train_dataloader, optimizer, epoch, lr_scheduler, step, 
-                             writer)
-        acc_current, loss = validate(config, valid_dataset, valid_dataloader, model, epoch, writer)
+                             None)
+        acc_current, loss = validate(config, valid_dataset, valid_dataloader, model, epoch, None)
         logger.info(f"Accuracy of the network on the validated images: {acc_current:.1f}%")
 
         # is current accuracy in topK?
@@ -176,7 +176,7 @@ def test(config):
 
 
 
-def train_one_epoch(config, model, dataset, data_loader, optimizer, epoch, lr_scheduler, step, writer):
+def train_one_epoch(config, model, dataset, data_loader, optimizer, epoch, lr_scheduler, step, None):
     model.train()
     optimizer.zero_grad()
 
@@ -201,15 +201,15 @@ def train_one_epoch(config, model, dataset, data_loader, optimizer, epoch, lr_sc
             step += 1
         optimizer.zero_grad()
         loss_meter.update(loss.item())
-        writer.add_scalar("Loss/train", loss.item(), step)
-        writer.add_scalar("Acc/train", acc.item(), step)
+        # writer.add_scalar("Loss/train", loss.item(), step)
+        # writer.add_scalar("Acc/train", acc.item(), step)
         acc_meter.update(acc.item())
         batch_time.update(time.time() - end)
         end = time.time()
         if idx % config.PRINT_FREQ == 0:
             lr = optimizer.param_groups[0]['lr']
             wd = optimizer.param_groups[0]['weight_decay']      
-            writer.add_scalar("lr", lr, step)    
+            # writer.add_scalar("lr", lr, step)    
             if not ((not config.DATA.TRAIN.IS_EPISODIC) and config.DATA.TRAIN.ITERATION_PER_EPOCH is None and len(config.DATA.TRAIN.DATASET_NAMES) > 1):
                 etas = batch_time.avg * (len(data_loader) - idx-1)
                 logger.info(
@@ -228,9 +228,10 @@ def train_one_epoch(config, model, dataset, data_loader, optimizer, epoch, lr_sc
         step += 1
     epoch_time = time.time() - start
     logger.info(f"EPOCH {epoch} training takes {datetime.timedelta(seconds=int(epoch_time))}")
-    writer.add_scalar("Loss/train_epoch", loss_meter.avg, epoch)
-    writer.add_scalar("Acc/train_epoch", acc_meter.avg, epoch)
-
+    logger.info(f" * Acc@1 {acc_meter.avg:.2f}")
+    logger.info(f" * Loss {loss_meter.avg:.2f}")
+    # writer.add_scalar("Loss/train_epoch", loss_meter.avg, epoch)
+    # writer.add_scalar("Acc/train_epoch", acc_meter.avg, epoch)
 
     return step
 
@@ -268,9 +269,12 @@ def validate(config, dataset, data_loader, model, epoch=None, writer=None):
                 f'Loss {loss_meter.val:.2f} ({loss_meter.avg:.2f})\t'
                 f'Acc@1 {acc_meter.val:.2f} ({acc_meter.avg:.2f})\t')
     logger.info(f' * Acc@1 {acc_meter.avg:.2f}')
-    if epoch is not None and writer is not None:
-        writer.add_scalar("Loss/val_epoch", loss_meter.avg, epoch)
-        writer.add_scalar("Acc/val_epoch", acc_meter.avg, epoch)
+    # if epoch is not None and writer is not None:
+    #     writer.add_scalar("Loss/val_epoch", loss_meter.avg, epoch)
+    #     writer.add_scalar("Acc/val_epoch", acc_meter.avg, epoch)
+    if epoch is not None:
+        logger.info(f' * Acc@1 {acc_meter.avg:.2f}')
+        logger.info(f' * Loss {loss_meter.avg:.2f}')
     return acc_meter.avg, loss_meter.avg   
 
 @torch.no_grad()
