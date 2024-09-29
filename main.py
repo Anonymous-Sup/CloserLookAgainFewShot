@@ -108,6 +108,7 @@ def train(config):
     start_time = time.time()
 
     for epoch in range(config.TRAIN.START_EPOCH, config.TRAIN.EPOCHS):
+        acc_current, loss = validate(config, valid_dataloader, model, epoch, None)
         step = train_one_epoch(config, model, train_dataloader, optimizer, epoch, lr_scheduler, step, 
                              None)
         acc_current, loss = validate(config, valid_dataloader, model, epoch, None)
@@ -263,6 +264,10 @@ def validate(config, data_loader, model, epoch=None, writer=None):
         # dataset_index, imgs, labels = batches
         dataset_index = 0
         support_imgs, query_imgs, support_labels, query_labels = batches
+        logger.info(f"support_imgs: {support_imgs.shape}")
+        logger.info(f"query_imgs: {query_imgs.shape}")
+        logger.info(f"support_labels: {support_labels.shape}")
+        logger.info(f"query_labels: {query_labels.shape}")
         
         loss, acc = model.val_forward(support_imgs, query_imgs, support_labels, query_labels)
         
