@@ -84,7 +84,7 @@ def make_fewshot_dataloader(cfg):
     num_workers = 8
     
     # this might different between train and test set
-    dataset = __factory[cfg.DATA.TRAIN.DATASET_NAMES](root=cfg.DATA.TRAIN.DATASET_ROOTS, NWAY=cfg.FEWSHOT.NWAY, KSHOT=cfg.FEWSHOT.KSHOT)
+    dataset = __factory[cfg.DATASET](root=cfg.DATA_ROOT, NWAY=cfg.FEWSHOT.NWAY, KSHOT=cfg.FEWSHOT.KSHOT)
     
     train_set = ImageDataset(dataset.train, train_transforms)
 

@@ -11,6 +11,9 @@ Data["FEWSHOT"]["TRAIN_QUERY_SHOT"] = 15
 Data["FEWSHOT"]["TEST_QUERY_SHOT"] = 15
 Data["FEWSHOT"]["TRAIL"] = 1000
 
+Data["DATASET"] = "sketchy"
+Data["DATA_ROOT"] = "/home/zhengwei/my_data/datasets"
+
 Data["DATA"] = {}
 Data["DATA"]["TRAIN"] = {}
 Data["DATA"]["TRAIN"]["DATASET_ROOTS"] = ["/home/zhengwei/my_data/datasets"]
