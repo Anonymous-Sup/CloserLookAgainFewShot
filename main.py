@@ -102,13 +102,13 @@ def train(config):
     logger.info("Start training")
     start_time = time.time()
 
-    
-
     for epoch in range(config.TRAIN.START_EPOCH, config.TRAIN.EPOCHS):
         step = train_one_epoch(config, model, train_dataloader, optimizer, epoch, lr_scheduler, step, 
                              None)
         acc_current, loss = validate(config, valid_dataloader, model, epoch, None)
         logger.info(f"Accuracy of the network on the validated images: {acc_current:.1f}%")
+        test_acc, test_loss = test(config, test_loader, model)
+        logger.info(f"Test Accuracy: {test_acc:.2f}%")
 
         # is current accuracy in topK?
         topK = None
@@ -135,6 +135,10 @@ def train(config):
     total_time = time.time() - start_time
     total_time_str = str(datetime.timedelta(seconds=int(total_time)))
     logger.info('Training time {}'.format(total_time_str))
+
+    # test_acc, test_loss = test(config, test_loader, model)
+    # logger.info(f"Test Accuracy: {test_acc:.2f}%")
+
 
 
 def test(config):
@@ -252,7 +256,7 @@ def validate(config, data_loader, model, epoch=None, writer=None):
     for idx, batches in enumerate(data_loader):
         # dataset_index, imgs, labels = batches
         dataset_index = 0
-        imgs, labels, target_cam, _, target_view, _ = batches
+        imgs, labels, target_cam, target_view, _ = batches
         
         loss, acc = model.val_forward(imgs, labels, dataset_index)
         
