@@ -183,19 +183,19 @@ def make_dataloader_finetune(cfg):
     cam_num = dataset.num_train_cams
     view_num = dataset.num_train_vids
 
-    finetune_mm_set = FEWSHOT_ImageDataset(dataset.train, dataset.val, train_transforms, val_transforms, is_few_shot=True, n_support=5, n_query=15)
+    finetune_mm_set = FEWSHOT_Finetune_ImageDataset(dataset.train, dataset.val, train_transforms, val_transforms, is_few_shot=True, n_support=5, n_query=15)
     finetune_mm_loader = DataLoader(
         finetune_mm_set, batch_size=128, shuffle=False, num_workers=num_workers,
         collate_fn=val_collate_fn
     )
 
-    finetune_rgb_set = FEWSHOT_ImageDataset(dataset.train, dataset.gallery, train_transforms, val_transforms, is_few_shot=True, n_support=5, n_query=15)
+    finetune_rgb_set = FEWSHOT_Finetune_ImageDataset(dataset.train, dataset.gallery, train_transforms, val_transforms, is_few_shot=True, n_support=5, n_query=15)
     finetune_rgb_loader = DataLoader(
         finetune_rgb_set, batch_size=128, shuffle=False, num_workers=num_workers,
         collate_fn=val_collate_fn
     )
 
-    finetune_sketch_set = FEWSHOT_ImageDataset(dataset.train, dataset.query, train_transforms, val_transforms, is_few_shot=True, n_support=5, n_query=15)
+    finetune_sketch_set = FEWSHOT_Finetune_ImageDataset(dataset.train, dataset.query, train_transforms, val_transforms, is_few_shot=True, n_support=5, n_query=15)
     finetune_sketch_loader = DataLoader(
         finetune_sketch_set, batch_size=128, shuffle=False, num_workers=num_workers,
         collate_fn=val_collate_fn
