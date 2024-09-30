@@ -103,6 +103,11 @@ class Finetuner(nn.Module):
 
         # way = torch.max(support_labels).item()+1
         unique_labels = torch.unique(support_labels)
+        
+        label_mapping = {label.item(): idx for idx, label in enumerate(unique_labels)}
+        support_labels = torch.tensor([label_mapping[label.item()] for label in support_labels], device=device)
+
+
         way = unique_labels.size(0)
         model = FinetuneModel(self.backbone, way, device, self.use_alpha, self.use_beta, self.head)
 
