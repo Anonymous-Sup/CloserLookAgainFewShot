@@ -164,6 +164,9 @@ class Finetuner(nn.Module):
                         train_batch = model(train_batch, backbone_grad = False)
 
                     # print("label_batch",label_batch, label_batch.size())
+                    assert train_batch.size(0) == label_batch.size(0), "Mismatch in batch size between train_batch and label_batch"
+                     # Print shapes for debugging
+                    print(f"train_batch shape: {train_batch.shape}, label_batch shape: {label_batch.shape}")
                     if not self.head == "NCC":
                         loss = F.cross_entropy(train_batch, label_batch)
                     else:
