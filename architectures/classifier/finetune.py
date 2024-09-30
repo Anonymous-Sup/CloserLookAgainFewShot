@@ -30,7 +30,7 @@ class FinetuneModel(torch.nn.Module):
         '''
         # Ensure backbone.outdim and way are integers
         assert isinstance(backbone.outdim, int), f"Expected 'backbone.outdim' to be an integer, but got {type(backbone.outdim).__name__}"
-        assert isinstance(way, int), f"Expected 'way' to be an integer, but got {type(way).__name__}"
+        assert isinstance(way, int), f"Expected 'way' to be an integer, but got {way, type(way).__name__}"
         
         self.backbone = deepcopy(backbone).to(device)
         if head == "cc":
