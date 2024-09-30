@@ -63,9 +63,10 @@ def train(config):
     # valid_dataloader, valid_dataset = create_torch_dataloader(Split.VALID, config)
     
     # for base
-    train_dataloader, _, valid_dataloader, query_loader, test_loader, num_query, num_classes, _, _ = make_dataloader(config)
+    # train_dataloader, _, valid_dataloader, query_loader, test_loader, num_query, num_classes, _, _ = make_dataloader(config)
     # for novel
     # train_loader, _, valid_dataloader, query_loader, gallery_loader, num_query, num_classes, _, _ = make_fewshot_dataloader(config)
+    train_dataloader, finetune_mm_loader, finetune_rgb_loader, finetune_sketch_loader, num_classes = make_dataloader_finetune(config)
 
     # writer = SummaryWriter(log_dir=config.OUTPUT)
 
@@ -100,8 +101,8 @@ def train(config):
 
     if config.MODEL.PRETRAINED:
         load_pretrained(config, model, logger)
-        acc1, loss = validate(config, valid_dataloader, model)
-        logger.info(f"Accuracy of the network on the {len(valid_dataloader)} test images: {acc1:.1f}%")
+        acc1, loss = validate(config, finetune_rgb_loader, model)
+        logger.info(f"Accuracy of the network on the test images: {acc1:.1f}%")
 
 
     logger.info("Start training")
@@ -110,7 +111,7 @@ def train(config):
     for epoch in range(config.TRAIN.START_EPOCH, config.TRAIN.EPOCHS):
         step = train_one_epoch(config, model, train_dataloader, optimizer, epoch, lr_scheduler, step, 
                              None)
-        acc_current, loss, ci = validate(config, valid_dataloader, model, epoch, None)
+        acc_current, loss, ci = validate(config, finetune_mm_loader, model, epoch, None)
         logger.info(f"Accuracy of the validation images: {acc_current:.1f}%+-{ci:.2f}")
 
         # is current accuracy in topK?
@@ -139,7 +140,7 @@ def train(config):
     total_time_str = str(datetime.timedelta(seconds=int(total_time)))
     logger.info('Training time {}'.format(total_time_str))
 
-    test_acc, test_loss, ci = validate(config, test_loader, model)
+    test_acc, test_loss, ci = validate(config, finetune_rgb_loader, model)
     logger.info(f"Accuracy of the test images: {test_acc:.1f}%+-{ci:.2f}")
 
 

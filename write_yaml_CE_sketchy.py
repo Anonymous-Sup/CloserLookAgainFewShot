@@ -7,8 +7,8 @@ Data = {}
 Data["FEWSHOT"] = {}
 Data["FEWSHOT"]["NWAY"] = 5
 Data["FEWSHOT"]["KSHOT"] = 1
-Data["FEWSHOT"]["TRAIN_QUERY_SHOT"] = 5
-Data["FEWSHOT"]["TEST_QUERY_SHOT"] = 5
+Data["FEWSHOT"]["TRAIN_QUERY_SHOT"] = 15
+Data["FEWSHOT"]["TEST_QUERY_SHOT"] = 15
 Data["FEWSHOT"]["TRAIL"] = 1000
 
 Data["DATASET"] = "sketchy"
@@ -40,7 +40,7 @@ Data["AUG"] = {}
 Data["AUG"]["MEAN"] = [0.4712, 0.4499, 0.4031]
 Data["AUG"]["STD"] = [0.2726, 0.2634, 0.2794]
 
-Data["OUTPUT"] = "/data/zhengwei/CloserLookAgainFewShot/base_sketchy"
+Data["OUTPUT"] = "/data/zhengwei/CloserLookAgainFewShot/base_sketchy_2nd"
 
 Data["MODEL"] = {}
 Data["MODEL"]["TYPE"] = "CE"

@@ -260,6 +260,47 @@ class VisionTransformer(nn.Module):
             if len(self.blocks) - i <= n:
                 output.append(self.norm(x))
         return output
+    
+    def load_param(self, model_path):
+        param_dict = torch.load(model_path, map_location='cpu')
+        if 'model' in param_dict:
+            param_dict = param_dict['model']
+        if 'state_dict' in param_dict:
+            param_dict = param_dict['state_dict']
+        for k, v in param_dict.items():
+            if 'head' in k or 'dist' in k:
+                continue
+            if 'patch_embed.proj.weight' in k and len(v.shape) < 4:
+                # For old models that I trained prior to conv based patchification
+                O, I, H, W = self.patch_embed.proj.weight.shape
+                v = v.reshape(O, -1, H, W)
+            elif k == 'pos_embed' and v.shape != self.pos_embed.shape:
+                # To resize pos embedding when using model at different size from pretrained weights
+                if 'distilled' in model_path:
+                    print('distill need to choose right cls token in the pth')
+                    v = torch.cat([v[:, 0:1], v[:, 2:]], dim=1)
+                v = resize_pos_embed(v, self.pos_embed, self.patch_embed.num_y, self.patch_embed.num_x)
+            try:
+                self.state_dict()[k].copy_(v)
+            except:
+                print('===========================ERROR=========================')
+                print('shape do not match in k :{}: param_dict{} vs self.state_dict(){}'.format(k, v.shape, self.state_dict()[k].shape))
+
+def resize_pos_embed(posemb, posemb_new, hight, width):
+    # Rescale the grid of position embeddings when loading from state_dict. Adapted from
+    # https://github.com/google-research/vision_transformer/blob/00883dd691c63a6830751563748663526e811cee/vit_jax/checkpoint.py#L224
+    ntok_new = posemb_new.shape[1]
+
+    posemb_token, posemb_grid = posemb[:, :1], posemb[0, 1:]
+    ntok_new -= 1
+
+    gs_old = int(math.sqrt(len(posemb_grid)))
+    print('Resized position embedding from size:{} to size: {} with height:{} width: {}'.format(posemb.shape, posemb_new.shape, hight, width))
+    posemb_grid = posemb_grid.reshape(1, gs_old, gs_old, -1).permute(0, 3, 1, 2)
+    posemb_grid = F.interpolate(posemb_grid, size=(hight, width), mode='bilinear')
+    posemb_grid = posemb_grid.permute(0, 2, 3, 1).reshape(1, hight * width, -1)
+    posemb = torch.cat([posemb_token, posemb_grid], dim=1)
+    return posemb
 
 
 def vit_tiny(patch_size=16, **kwargs):
@@ -280,6 +321,10 @@ def vit_base(patch_size=16, **kwargs):
     model = VisionTransformer(
         patch_size=patch_size, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4,
         qkv_bias=True, norm_layer=partial(nn.LayerNorm, eps=1e-6), **kwargs)
+    
+    model_path = '/home/zhengwei/github/TransReID/pretrained/jx_vit_base_p16_224-80ecf9dd.pth'
+    model.load_param(model_path)
+    print('Loading pretrained ImageNet model......from {}'.format(model_path))
     return model
 
 def create_model():

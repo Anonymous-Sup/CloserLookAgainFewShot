@@ -170,10 +170,18 @@ def make_dataloader_finetune(cfg):
     num_workers = 8
 
     dataset = __factory[cfg.DATASET](root=cfg.DATA_ROOT, config=cfg)
+    
+    train_set = FEWSHOT_ImageDataset(dataset.train, train_transforms, is_few_shot=False)
 
     num_classes = dataset.num_train_pids
     cam_num = dataset.num_train_cams
     view_num = dataset.num_train_vids  
+
+    train_loader = DataLoader(
+    train_set, batch_size=cfg.DATA.TRAIN.BATCH_SIZE,
+    sampler=RandomIdentitySampler(dataset.train, cfg.DATA.TRAIN.BATCH_SIZE, 4),
+    num_workers=num_workers, collate_fn=train_collate_fn
+    )
 
     # n_way=5, k_shot=5, query_num=15, seed=0):
     finetune_mm_set = FEWSHOT_Finetune_ImageDataset(dataset.train, dataset.val, train_transforms, val_transforms, is_few_shot=True, n_way=cfg.FEWSHOT.NWAY, k_shot=cfg.FEWSHOT.KSHOT, query_num=cfg.FEWSHOT.TEST_QUERY_SHOT)
@@ -195,7 +203,7 @@ def make_dataloader_finetune(cfg):
     )
 
     # return train_loader_stage2, train_loader_stage1, val_loader, len(dataset.query), num_classes, cam_num, view_num
-    return finetune_mm_loader, finetune_rgb_loader, finetune_sketch_loader, num_classes
+    return train_loader, finetune_mm_loader, finetune_rgb_loader, finetune_sketch_loader, num_classes
 
 
 
