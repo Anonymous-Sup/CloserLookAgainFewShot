@@ -43,6 +43,10 @@ class FinetuneModule(nn.Module):
         acc = []
         for i , img_task in enumerate(zip(support_imgs, query_imgs, support_labels, query_labels)):
             support_img, query_img, _, _ = img_task
+            print("queruy_img",query_img.shape)
+            print("support_img",support_img.shape)
+            print("support_labels",support_labels[i].shape)
+            print("query_labels",query_labels[i].shape)
             score = self.classifier(query_img.squeeze_().cuda(), support_img.squeeze_().cuda(), support_labels[i].squeeze_().cuda(), **kwargs)
             loss += F.cross_entropy(score, query_labels[i].squeeze_().cuda())
             acc.append(accuracy(score, query_labels[i].squeeze_().cuda())[0])
