@@ -163,7 +163,7 @@ class Finetuner(nn.Module):
                     else:
                         train_batch = model(train_batch, backbone_grad = False)
 
-                    print("label_batch",label_batch, label_batch.size())
+                    # print("label_batch",label_batch, label_batch.size())
                     if not self.head == "NCC":
                         loss = F.cross_entropy(train_batch, label_batch)
                     else:
