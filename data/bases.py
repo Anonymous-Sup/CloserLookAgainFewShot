@@ -185,17 +185,17 @@ class FEWSHOT_ImageDataset(Dataset):
             return support_set, query_set, support_labels, query_labels
         
 
-
 class FEWSHOT_Finetune_ImageDataset(Dataset):
-    def __init__(self, dataset_query, dataset_support, train_transform=None, val_transform=None, is_few_shot=False, n_support=5, n_query=15, seed=0):
+    def __init__(self, dataset_query, dataset_support, train_transform=None, val_transform=None, is_few_shot=False, n_way=5, k_shot=5, query_num=15, seed=0):
         """
         dataset_query: a list of (img_path, pid, camid, trackid) for query set
         dataset_support: a list of (img_path, pid, camid, trackid) for support set
         train_transform: transformations for support set
         val_transform: transformations for query set
         is_few_shot: whether to use few-shot learning structure
-        n_support: number of support images
-        n_query: number of query images
+        n_way: number of unique classes in the support set
+        k_shot: number of samples per class in the support set
+        query_num: number of query samples per class
         seed: random seed for reproducibility
         """
         self.dataset_query = dataset_query
@@ -204,8 +204,9 @@ class FEWSHOT_Finetune_ImageDataset(Dataset):
         self.val_transform = val_transform
         
         self.is_few_shot = is_few_shot
-        self.n_support = n_support
-        self.n_query = n_query
+        self.n_way = n_way
+        self.k_shot = k_shot
+        self.query_num = query_num
         self._rng = np.random.RandomState(seed)
 
         # Group indices by class (pid) for both datasets
@@ -231,39 +232,39 @@ class FEWSHOT_Finetune_ImageDataset(Dataset):
                 img = self.train_transform(img)
             return img, pid, camid, trackid, img_path.split('/')[-1]
         else:
-            # Few-shot setup: get both support and query sets
-            pid = list(self.class_to_indices_query.keys())[index % len(self.class_to_indices_query)]
-            
-            # Sampling support and query images from the respective datasets
-            support_indices = self._rng.choice(self.class_to_indices_support[pid], self.n_support, replace=False)
-            
-            if len(self.class_to_indices_query[pid]) < self.n_query:
-                query_indices = self._rng.choice(self.class_to_indices_query[pid], self.n_query, replace=True)
-            else:
-                query_indices = self._rng.choice(self.class_to_indices_query[pid], self.n_query, replace=False)
-            
+            # Few-shot setup: get N-way classes and K-shot samples for support
+            selected_classes = self._rng.choice(list(self.class_to_indices_support.keys()), self.n_way, replace=False)
+
             support_set = []
             support_labels = []
             query_set = []
             query_labels = []
-            
-            # Load support set from dataset_support
-            for i in support_indices:
-                img_path, pid, camid, trackid = self.dataset_support[i]
-                img = read_image(img_path)
-                if self.train_transform is not None:
-                    img = self.train_transform(img)
-                support_set.append(img)
-                support_labels.append(pid)
-            
-            # Load query set from dataset_query
-            for i in query_indices:
-                img_path, pid, camid, trackid = self.dataset_query[i]
-                img = read_image(img_path)
-                if self.val_transform is not None:
-                    img = self.val_transform(img)
-                query_set.append(img)
-                query_labels.append(pid)
+
+            # Load support set (N-way, K-shot) and query set (query_num per class)
+            for pid in selected_classes:
+                support_indices = self._rng.choice(self.class_to_indices_support[pid], self.k_shot, replace=False)
+                if len(self.class_to_indices_query[pid]) < self.query_num:
+                    query_indices = self._rng.choice(self.class_to_indices_query[pid], self.query_num, replace=True)
+                else:
+                    query_indices = self._rng.choice(self.class_to_indices_query[pid], self.query_num, replace=False)
+
+                # Support set loading
+                for i in support_indices:
+                    img_path, pid, camid, trackid = self.dataset_support[i]
+                    img = read_image(img_path)
+                    if self.train_transform is not None:
+                        img = self.train_transform(img)
+                    support_set.append(img)
+                    support_labels.append(pid)
+                
+                # Query set loading
+                for i in query_indices:
+                    img_path, pid, camid, trackid = self.dataset_query[i]
+                    img = read_image(img_path)
+                    if self.val_transform is not None:
+                        img = self.val_transform(img)
+                    query_set.append(img)
+                    query_labels.append(pid)
                 
             # Convert to tensors
             support_set = torch.stack(support_set)
