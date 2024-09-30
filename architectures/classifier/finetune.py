@@ -101,7 +101,9 @@ class Finetuner(nn.Module):
 
         device = support_images.device
 
-        way = torch.max(support_labels).item()+1
+        # way = torch.max(support_labels).item()+1
+        unique_labels = torch.unique(support_labels)
+        way = unique_labels.size(0)
         model = FinetuneModel(self.backbone, way, device, self.use_alpha, self.use_beta, self.head)
 
         # By default, SGD is adopted as the optimizer. Other optimizers like Adam can be used as well.
