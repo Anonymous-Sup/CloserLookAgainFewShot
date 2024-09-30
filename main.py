@@ -327,7 +327,7 @@ def testing(config, data_loader, model):
         dataset_index = 0
         support_imgs, query_imgs, support_labels, query_labels = batches   
 
-        logger.info(f"support_imgs: {support_imgs.shape}, \n query_imgs: {query_imgs.shape}, \n support_labels: {support_labels.shape}, \n query_labels: {query_labels.shape}")
+        # logger.info(f"support_imgs: {support_imgs.shape}, \n query_imgs: {query_imgs.shape}, \n support_labels: {support_labels.shape}, \n query_labels: {query_labels.shape}")
         loss, acc = model.test_forward(support_imgs, query_imgs, support_labels, query_labels)
 
         accs.extend(acc)

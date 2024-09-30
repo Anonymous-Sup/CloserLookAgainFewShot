@@ -271,4 +271,4 @@ class FEWSHOT_Finetune_ImageDataset(Dataset):
             support_labels = torch.tensor(support_labels, dtype=torch.int64)
             query_labels = torch.tensor(query_labels, dtype=torch.int64)
             
-            return support_set, support_labels, query_set, query_labels
+            return support_set, query_set, support_labels, query_labels
