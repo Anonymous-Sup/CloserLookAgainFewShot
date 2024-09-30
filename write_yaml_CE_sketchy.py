@@ -6,7 +6,7 @@ Data = {}
 
 Data["FEWSHOT"] = {}
 Data["FEWSHOT"]["NWAY"] = 5
-Data["FEWSHOT"]["KSHOT"] = 1
+Data["FEWSHOT"]["KSHOT"] = 5
 Data["FEWSHOT"]["TRAIN_QUERY_SHOT"] = 15
 Data["FEWSHOT"]["TEST_QUERY_SHOT"] = 15
 Data["FEWSHOT"]["TRAIL"] = 1000
@@ -40,7 +40,7 @@ Data["AUG"] = {}
 Data["AUG"]["MEAN"] = [0.4712, 0.4499, 0.4031]
 Data["AUG"]["STD"] = [0.2726, 0.2634, 0.2794]
 
-Data["OUTPUT"] = "/data/zhengwei/CloserLookAgainFewShot/base_sketchy_2nd"
+Data["OUTPUT"] = "/data/zhengwei/CloserLookAgainFewShot/base_sketchy_2nd_5w5s"
 
 Data["MODEL"] = {}
 Data["MODEL"]["TYPE"] = "CE"
@@ -52,7 +52,7 @@ Data["MODEL"]["BACKBONE"] = 'vit'
 
 Data["DATA"]["IMG_SIZE"] = 224
 Data["DATA"]["NUM_WORKERS"] = 8
-Data["GPU_ID"] = 0
+Data["GPU_ID"] = 1
 Data["TRAIN"] = {}
 Data["TRAIN"]["EPOCHS"] = 60
 

@@ -4,7 +4,7 @@
 
 python write_yaml_CE_sketchy.py
 
-nohup python -u main.py --cfg configs/sketchy/vit.yaml --tag main > vitCE_base_sketchy_2nd.log 2>&1 &
+nohup python -u main.py --cfg configs/sketchy/vit.yaml --tag main > vitCE_base_sketchy_2nd_5w5s.log 2>&1 &
 
 
 
