@@ -71,12 +71,13 @@ class FinetuneModule(nn.Module):
             s_labels = relabel(s_labels.squeeze_().cuda(), label_map)
             q_labels = relabel(q_labels.squeeze_().cuda(), label_map)
 
+
             # Pass relabeled support labels to the classifier along with the images
-            score = self.classifier(query_img.squeeze_().cuda(), support_img.squeeze_().cuda(), s_labels, **kwargs)
+            score = self.classifier(query_img.squeeze_().cuda(), support_img.squeeze_().cuda(), s_labels.cuda(), **kwargs)
 
             # Compute loss and accuracy using the relabeled query labels
-            loss += F.cross_entropy(score, q_labels)
-            acc.append(accuracy(score, q_labels)[0])
+            loss += F.cross_entropy(score, q_labels.cuda())
+            acc.append(accuracy(score, q_labels.cuda())[0])
 
         loss = loss / len(support_imgs)
         return loss, acc

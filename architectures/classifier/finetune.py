@@ -102,7 +102,7 @@ class Finetuner(nn.Module):
         device = support_images.device
 
         way = torch.max(support_labels).item()+1
-        print(f"Current have way: {way}")
+        # print(f"Current have way: {way}")
         # unique_labels = torch.unique(support_labels)
         # print(f"support_labels: {support_labels}")
 
