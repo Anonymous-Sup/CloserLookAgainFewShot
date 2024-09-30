@@ -45,7 +45,7 @@ class FinetuneModule(nn.Module):
             support_img, query_img, _, _ = img_task
             score = self.classifier(query_img.squeeze_().cuda(), support_img.squeeze_().cuda(), support_labels[i].squeeze_().cuda(), **kwargs)
             loss += F.cross_entropy(score, query_labels[i].squeeze_().cuda())
-            acc.append(accuracy(score, query_labels[i].cuda())[0])
+            acc.append(accuracy(score, query_labels[i].squeeze_().cuda())[0])
         loss = loss / len(support_imgs)
         return loss, acc
     

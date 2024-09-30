@@ -111,9 +111,9 @@ class Finetuner(nn.Module):
 
         # Ensure all labels are in the range [0, way-1]
         assert support_labels.min() >= 0 and support_labels.max() < way, "Labels are out of range"
-        print(f"way: {way}")
-        print(f"unique_labels: {unique_labels}")
-        print(f"support_labels: {support_labels}")
+        # print(f"way: {way}")
+        # print(f"unique_labels: {unique_labels}")
+        # print(f"support_labels: {support_labels}")
         
         model = FinetuneModel(self.backbone, way, device, self.use_alpha, self.use_beta, self.head)
 
@@ -175,9 +175,9 @@ class Finetuner(nn.Module):
                         train_batch = model(train_batch, backbone_grad = False)
 
                     # print("label_batch",label_batch, label_batch.size())
-                    assert train_batch.size(0) == label_batch.size(0), "Mismatch in batch size between train_batch and label_batch"
+                    # assert train_batch.size(0) == label_batch.size(0), "Mismatch in batch size between train_batch and label_batch"
                      # Print shapes for debugging
-                    print(f"train_batch shape: {train_batch.shape}, label_batch shape: {label_batch.shape}")
+                    # print(f"train_batch shape: {train_batch.shape}, label_batch shape: {label_batch.shape}")
                     if not self.head == "NCC":
                         loss = F.cross_entropy(train_batch, label_batch)
                     else:
