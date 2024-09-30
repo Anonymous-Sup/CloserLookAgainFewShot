@@ -16,7 +16,6 @@ class FinetuneModule(nn.Module):
         # The last hyperparameter is the head mode
         self.mode = config.MODEL.CLASSIFIER_PARAMETERS[-1]
 
-        
         if not self.mode == "NCC":
             classifier_hyperparameters = [self.backbone]+config.MODEL.CLASSIFIER_PARAMETERS
             self.classifier = get_classifier(config.MODEL.CLASSIFIER, *classifier_hyperparameters)
@@ -27,20 +26,18 @@ class FinetuneModule(nn.Module):
         classifier_hyperparameters = [self.backbone]+self.config.MODEL.CLASSIFIER_PARAMETERS
         self.classifier = get_classifier(self.config.MODEL.CLASSIFIER, *classifier_hyperparameters)
 
-    def test_forward(self, img_tasks,label_tasks, *args, **kwargs):
-        batch_size = len(img_tasks)
-        loss = 0.
-        acc = []
-        for i, img_task in enumerate(img_tasks):
-            score = self.classifier(img_task["query"].squeeze_().cuda(), img_task["support"].squeeze_().cuda(),
-                                    label_tasks[i]["support"].squeeze_().cuda())
-            loss += F.cross_entropy(score, label_tasks[i]["query"].squeeze_().cuda())
-            acc.append(accuracy(score, label_tasks[i]["query"].cuda())[0])
-        loss /= batch_size
-        return loss, acc
+    # def test_forward(self, img_tasks, label_tasks, *args, **kwargs):
+    #     batch_size = len(img_tasks)
+    #     loss = 0.
+    #     acc = []
+    #     for i, img_task in enumerate(img_tasks):
+    #         score = self.classifier(img_task["query"].squeeze_().cuda(), img_task["support"].squeeze_().cuda(),
+    #                                 label_tasks[i]["support"].squeeze_().cuda())
+    #         loss += F.cross_entropy(score, label_tasks[i]["query"].squeeze_().cuda())
+    #         acc.append(accuracy(score, label_tasks[i]["query"].cuda())[0])
+    #     loss /= batch_size
+    #     return loss, acc
     
-
-
     def test_forward(self, support_imgs, query_imgs, support_labels, query_labels, *args, **kwargs):
         loss = 0.
         acc = []

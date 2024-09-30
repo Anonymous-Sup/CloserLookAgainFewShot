@@ -28,6 +28,10 @@ class FinetuneModel(torch.nn.Module):
         use_beta: for URL and TSA only. Whether use  pre-classifier transformation.
         head: Use fc head or PN head to finetune.
         '''
+        # Ensure backbone.outdim and way are integers
+        assert isinstance(backbone.outdim, int), f"Expected 'backbone.outdim' to be an integer, but got {type(backbone.outdim).__name__}"
+        assert isinstance(way, int), f"Expected 'way' to be an integer, but got {type(way).__name__}"
+        
         self.backbone = deepcopy(backbone).to(device)
         if head == "cc":
             self.L = CC_head(backbone.outdim, way).to(device)
