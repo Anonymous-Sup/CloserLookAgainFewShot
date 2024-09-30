@@ -64,27 +64,19 @@ def val_collate_fn(batch):
     If it's a few-shot batch, it will return the support and query sets separately.
     """
     # Check if the first element is a few-shot sample by checking if batch[0] contains two sets (support and query)
-    if len(batch[0]) == 4:
-        # Few-shot mode
-        support_sets, query_sets, support_labels, query_labels = zip(*batch)
-        
-        # Stack support sets and query sets separately
-        support_sets = torch.stack(support_sets, dim=0)
-        query_sets = torch.stack(query_sets, dim=0)
-        
-        # Stack labels for support and query sets
-        support_labels = torch.stack(support_labels, dim=0)
-        query_labels = torch.stack(query_labels, dim=0)
 
-        return support_sets, query_sets, support_labels, query_labels
+    # Few-shot mode
+    support_sets, query_sets, support_labels, query_labels = zip(*batch)
     
-    else:
-        # Standard mode
-        imgs, pids, camids, viewids, img_paths = zip(*batch)
-        pids = torch.tensor(pids, dtype=torch.int64)
-        camids_batch = torch.tensor(camids, dtype=torch.int64)
-        return torch.stack(imgs, dim=0), pids, camids_batch, viewids, img_paths
+    # Stack support sets and query sets separately
+    support_sets = torch.stack(support_sets, dim=0)
+    query_sets = torch.stack(query_sets, dim=0)
+    
+    # Stack labels for support and query sets
+    support_labels = torch.stack(support_labels, dim=0)
+    query_labels = torch.stack(query_labels, dim=0)
 
+    return support_sets, query_sets, support_labels, query_labels
 
 SIZE_TRAIN = [256,128]
 SIZE_TEST =  [256,128]

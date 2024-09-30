@@ -236,6 +236,7 @@ class FEWSHOT_Finetune_ImageDataset(Dataset):
             
             # Sampling support and query images from the respective datasets
             support_indices = self._rng.choice(self.class_to_indices_support[pid], self.n_support, replace=False)
+            
             if len(self.class_to_indices_query[pid]) < self.n_query:
                 query_indices = self._rng.choice(self.class_to_indices_query[pid], self.n_query, replace=True)
             else:
