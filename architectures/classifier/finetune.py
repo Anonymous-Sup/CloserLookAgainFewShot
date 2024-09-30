@@ -101,13 +101,14 @@ class Finetuner(nn.Module):
 
         device = support_images.device
 
-        # way = torch.max(support_labels).item()+1
-        unique_labels = torch.unique(support_labels)
-        print(f"support_labels: {support_labels}")
+        way = torch.max(support_labels).item()+1
+        print(f"Current have way: {way}")
+        # unique_labels = torch.unique(support_labels)
+        # print(f"support_labels: {support_labels}")
 
-        label_mapping = {label.item(): idx for idx, label in enumerate(unique_labels)}
-        support_labels = torch.tensor([label_mapping[label.item()] for label in support_labels], device=device)
-        way = unique_labels.size(0)
+        # label_mapping = {label.item(): idx for idx, label in enumerate(unique_labels)}
+        # support_labels = torch.tensor([label_mapping[label.item()] for label in support_labels], device=device)
+        # way = unique_labels.size(0)
 
         # Ensure all labels are in the range [0, way-1]
         assert support_labels.min() >= 0 and support_labels.max() < way, "Labels are out of range"
