@@ -165,12 +165,12 @@ def test(config):
 
     with torch.no_grad():
         acc1, loss, ci = testing(config, finetune_mm_loader, model)
-        acc2, loss2, ci2 = testing(config, finetune_rgb_loader, model)
-        acc3, loss3, ci3 = testing(config, finetune_sketch_loader, model)
+        # acc2, loss2, ci2 = testing(config, finetune_rgb_loader, model)
+        # acc3, loss3, ci3 = testing(config, finetune_sketch_loader, model)
 
     logger.info(f"Accuracy of the Test MM images: {acc1:.2f}%+-{ci:.2f}")
-    logger.info(f"Accuracy of the Test RGB images: {acc2:.2f}%+-{ci2:.2f}")
-    logger.info(f"Accuracy of the Test Sketch images: {acc3:.2f}%+-{ci3:.2f}")
+    # logger.info(f"Accuracy of the Test RGB images: {acc2:.2f}%+-{ci2:.2f}")
+    # logger.info(f"Accuracy of the Test Sketch images: {acc3:.2f}%+-{ci3:.2f}")
 
     # logger.info(f"Test Accuracy of {config.DATA.TEST.DATASET_NAMES[0]}: {acc1:.2f}%+-{ci:.2f}")
     
