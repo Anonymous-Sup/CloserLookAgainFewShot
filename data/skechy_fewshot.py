@@ -238,7 +238,7 @@ class Sketchy(BaseImageDataset):
         super(Sketchy, self).__init__()
 
         # self.training_mode = config.DATASETS.TRAINING_MODE # choice for 'base' and 'novel' or 'novel_few'
-        self.training_mode = 'novel'
+        self.training_mode = 'novel_few'
 
         self.base_label2index, self.novel_label2index, self.selected_label2inds = buildLabelIndex(Way=config.FEWSHOT.NWAY, seed=1)
 
