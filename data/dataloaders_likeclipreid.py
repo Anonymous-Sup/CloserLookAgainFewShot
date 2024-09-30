@@ -8,7 +8,7 @@ from PIL import Image
 # from .samplers import FewshotBatchSampler, RandomSampler, ValSampler
 from .sampler import FewshotSampler, RandomIdentitySampler
 
-from .bases import ImageDataset, FEWSHOT_ImageDataset
+from .bases import ImageDataset, FEWSHOT_ImageDataset, FEWSHOT_Finetune_ImageDataset
 from .skechy_fewshot import Sketchy
 
 
@@ -95,6 +95,7 @@ PIXEL_STD = [0.5, 0.5, 0.5]
 RE_PROB = 0.5
 
 
+
 def make_dataloader(cfg):
     train_transforms = T.Compose([
             T.Resize(SIZE_TRAIN, interpolation=3),
@@ -154,6 +155,54 @@ def make_dataloader(cfg):
 
     # return train_loader_stage2, train_loader_stage1, val_loader, len(dataset.query), num_classes, cam_num, view_num
     return train_loader, visual_train_loader, val_loader, query_loader, gallery_loader, len(dataset.query), num_classes, cam_num, view_num
+
+
+def make_dataloader_finetune(cfg):
+    train_transforms = T.Compose([
+            T.Resize(SIZE_TRAIN, interpolation=3),
+            T.RandomHorizontalFlip(p=PROB),
+            T.Pad(PADDING),
+            T.RandomCrop(SIZE_TRAIN),
+            T.ToTensor(),
+            T.Normalize(mean=PIXEL_MEAN, std=PIXEL_STD),
+            RandomErasing(probability=RE_PROB, mode='pixel', max_count=1, device='cpu'),
+            # RandomErasing(probability=cfg.INPUT.RE_PROB, mean=cfg.INPUT.PIXEL_MEAN)
+        ])
+
+    val_transforms = T.Compose([
+        T.Resize(SIZE_TEST),
+        T.ToTensor(),
+        T.Normalize(mean=PIXEL_MEAN, std=PIXEL_STD)
+    ])
+
+    num_workers = 8
+
+    dataset = __factory[cfg.DATASET](root=cfg.DATA_ROOT, config=cfg)
+
+    num_classes = dataset.num_train_pids
+    cam_num = dataset.num_train_cams
+    view_num = dataset.num_train_vids
+
+    finetune_mm_set = FEWSHOT_ImageDataset(dataset.train, dataset.val, train_transforms, val_transforms, is_few_shot=True, n_support=5, n_query=15)
+    finetune_mm_loader = DataLoader(
+        finetune_mm_set, batch_size=128, shuffle=False, num_workers=num_workers,
+        collate_fn=val_collate_fn
+    )
+
+    finetune_rgb_set = FEWSHOT_ImageDataset(dataset.train, dataset.gallery, train_transforms, val_transforms, is_few_shot=True, n_support=5, n_query=15)
+    finetune_rgb_loader = DataLoader(
+        finetune_rgb_set, batch_size=128, shuffle=False, num_workers=num_workers,
+        collate_fn=val_collate_fn
+    )
+
+    finetune_sketch_set = FEWSHOT_ImageDataset(dataset.train, dataset.query, train_transforms, val_transforms, is_few_shot=True, n_support=5, n_query=15)
+    finetune_sketch_loader = DataLoader(
+        finetune_sketch_set, batch_size=128, shuffle=False, num_workers=num_workers,
+        collate_fn=val_collate_fn
+    )
+
+    # return train_loader_stage2, train_loader_stage1, val_loader, len(dataset.query), num_classes, cam_num, view_num
+    return finetune_mm_loader, finetune_rgb_loader, finetune_sketch_loader, num_classes
 
 
 

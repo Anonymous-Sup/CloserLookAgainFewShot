@@ -183,3 +183,88 @@ class FEWSHOT_ImageDataset(Dataset):
 
             
             return support_set, query_set, support_labels, query_labels
+        
+
+
+class FEWSHOT_Finetune_ImageDataset(Dataset):
+    def __init__(self, dataset_query, dataset_support, train_transform=None, val_transform=None, is_few_shot=False, n_support=5, n_query=15, seed=0):
+        """
+        dataset_query: a list of (img_path, pid, camid, trackid) for query set
+        dataset_support: a list of (img_path, pid, camid, trackid) for support set
+        train_transform: transformations for support set
+        val_transform: transformations for query set
+        is_few_shot: whether to use few-shot learning structure
+        n_support: number of support images
+        n_query: number of query images
+        seed: random seed for reproducibility
+        """
+        self.dataset_query = dataset_query
+        self.dataset_support = dataset_support
+        self.train_transform = train_transform
+        self.val_transform = val_transform
+        
+        self.is_few_shot = is_few_shot
+        self.n_support = n_support
+        self.n_query = n_query
+        self._rng = np.random.RandomState(seed)
+
+        # Group indices by class (pid) for both datasets
+        self.class_to_indices_query = self._group_by_class(self.dataset_query)
+        self.class_to_indices_support = self._group_by_class(self.dataset_support)
+
+    def _group_by_class(self, dataset):
+        """Group dataset indices by class (pid)"""
+        class_to_indices = collections.defaultdict(list)
+        for index, (_, pid, _, _) in enumerate(dataset):
+            class_to_indices[pid].append(index)
+        return class_to_indices
+
+    def __len__(self):
+        return len(self.dataset_query) if self.is_few_shot else len(self.dataset_support)
+
+    def __getitem__(self, index):
+        if not self.is_few_shot:
+            # Regular dataset access (support set)
+            img_path, pid, camid, trackid = self.dataset_support[index]
+            img = read_image(img_path)
+            if self.train_transform is not None:
+                img = self.train_transform(img)
+            return img, pid, camid, trackid, img_path.split('/')[-1]
+        else:
+            # Few-shot setup: get both support and query sets
+            pid = list(self.class_to_indices_query.keys())[index % len(self.class_to_indices_query)]
+            
+            # Sampling support and query images from the respective datasets
+            support_indices = self._rng.choice(self.class_to_indices_support[pid], self.n_support, replace=False)
+            query_indices = self._rng.choice(self.class_to_indices_query[pid], self.n_query, replace=False)
+            
+            support_set = []
+            support_labels = []
+            query_set = []
+            query_labels = []
+            
+            # Load support set from dataset_support
+            for i in support_indices:
+                img_path, pid, camid, trackid = self.dataset_support[i]
+                img = read_image(img_path)
+                if self.train_transform is not None:
+                    img = self.train_transform(img)
+                support_set.append(img)
+                support_labels.append(pid)
+            
+            # Load query set from dataset_query
+            for i in query_indices:
+                img_path, pid, camid, trackid = self.dataset_query[i]
+                img = read_image(img_path)
+                if self.val_transform is not None:
+                    img = self.val_transform(img)
+                query_set.append(img)
+                query_labels.append(pid)
+                
+            # Convert to tensors
+            support_set = torch.stack(support_set)
+            query_set = torch.stack(query_set)
+            support_labels = torch.tensor(support_labels, dtype=torch.int64)
+            query_labels = torch.tensor(query_labels, dtype=torch.int64)
+            
+            return support_set, support_labels, query_set, query_labels

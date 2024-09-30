@@ -38,6 +38,20 @@ class FinetuneModule(nn.Module):
             acc.append(accuracy(score, label_tasks[i]["query"].cuda())[0])
         loss /= batch_size
         return loss, acc
+    
+
+
+    def test_forward(self, support_imgs, query_imgs, support_labels, query_labels, *args, **kwargs):
+        loss = 0.
+        acc = []
+        for i , img_task in enumerate(zip(support_imgs, query_imgs, support_labels, query_labels)):
+            support_img, query_img, _, _ = img_task
+            score = self.classifier(query_img.squeeze_().cuda(), support_img.squeeze_().cuda(), support_labels[i].squeeze_().cuda(), **kwargs)
+            loss += F.cross_entropy(score, query_labels[i].squeeze_().cuda())
+            acc.append(accuracy(score, query_labels[i].cuda())[0])
+        loss = loss / len(support_imgs)
+        return loss, acc
+    
 
 def get_model(config):
     return FinetuneModule(config)

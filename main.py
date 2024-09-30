@@ -4,7 +4,7 @@ import os
 from logger import create_logger
 from data import create_torch_dataloader
 # from data.dataloaders_new import make_fewshot_dataloader
-from data.dataloaders_likeclipreid import make_dataloader, make_fewshot_dataloader
+from data.dataloaders_likeclipreid import make_dataloader, make_fewshot_dataloader, make_dataloader_finetune
 from data.dataset_spec import Split
 import torch
 import numpy as np
@@ -144,7 +144,11 @@ def train(config):
 
 
 def test(config):
-    test_dataloader, test_dataset = create_torch_dataloader(Split.TEST, config)
+
+    finetune_mm_loader, finetune_rgb_loader, finetune_sketch_loader, num_classes = make_dataloader_finetune(config)
+    # train_dataloader, _, valid_dataloader, query_loader, test_loader, num_query, num_classes, _, _ = make_dataloader(config)
+
+    # test_dataloader, test_dataset = create_torch_dataloader(Split.TEST, config)
 
     logger.info(f"Creating model:{config.MODEL.TYPE}/{config.MODEL.NAME}")
 
@@ -157,29 +161,33 @@ def test(config):
     if hasattr(model, 'mode') and model.mode == "NCC":
         model.append_adapter()
 
-
     logger.info("Start testing")
 
     with torch.no_grad():
-        acc1, loss, ci = testing(config, test_dataset, test_dataloader, model)
-    logger.info(f"Test Accuracy of {config.DATA.TEST.DATASET_NAMES[0]}: {acc1:.2f}%+-{ci:.2f}")
+        acc1, loss, ci = testing(config, finetune_mm_loader, model)
+        acc2, loss2, ci2 = testing(config, finetune_rgb_loader, model)
+        acc3, loss3, ci3 = testing(config, finetune_sketch_loader, model)
+
+    logger.info(f"Accuracy of the Test MM images: {acc1:.2f}%+-{ci:.2f}")
+    logger.info(f"Accuracy of the Test RGB images: {acc2:.2f}%+-{ci2:.2f}")
+    logger.info(f"Accuracy of the Test Sketch images: {acc3:.2f}%+-{ci3:.2f}")
+
+    # logger.info(f"Test Accuracy of {config.DATA.TEST.DATASET_NAMES[0]}: {acc1:.2f}%+-{ci:.2f}")
     
-    # logging testing results in config.OUTPUT/results.json
-    path = os.path.join(config.OUTPUT, "results.json")
-    if os.path.exists(path):
-        with open(path, 'r') as f:
-            result_dic = json.load(f)
-    else:
-        result_dic = {}
+    # # logging testing results in config.OUTPUT/results.json
+    # path = os.path.join(config.OUTPUT, "results.json")
+    # if os.path.exists(path):
+    #     with open(path, 'r') as f:
+    #         result_dic = json.load(f)
+    # else:
+    #     result_dic = {}
 
-    # by default, we assume there is only one dataset to be tested at a time.
-    result_dic[f"{config.DATA.TEST.DATASET_NAMES[0]}"]=[acc1, ci]
+    # # by default, we assume there is only one dataset to be tested at a time.
+    # result_dic[f"{config.DATA.TEST.DATASET_NAMES[0]}"]=[acc1, ci]
 
-    with open(path, 'w') as f:
-        json.dump(result_dic, f)
+    # with open(path, 'w') as f:
+    #     json.dump(result_dic, f)
     
-
-
 
 
 def train_one_epoch(config, model, data_loader, optimizer, epoch, lr_scheduler, step, writer=None):
@@ -310,10 +318,17 @@ def testing(config, data_loader, model):
 
     # dataset.set_epoch()
     for idx, batches in enumerate(data_loader):
+ 
+        if idx >= 3:
+            # logger.info("Only evaluate {} tasks".format(idx*batches[0].shape[0]))
+            break
+        
+        # dataset_index, imgs, labels = batches
         dataset_index = 0
-        imgs, labels, target_cam, target_view, _ = batches
+        support_imgs, query_imgs, support_labels, query_labels = batches   
 
-        loss, acc = model.test_forward(imgs, labels, dataset_index)
+        loss, acc = model.test_forward(support_imgs, query_imgs, support_labels, query_labels)
+
         accs.extend(acc)
         acc = torch.mean(torch.stack(acc))
 
@@ -324,14 +339,16 @@ def testing(config, data_loader, model):
         batch_time.update(time.time() - end)
         end = time.time()
 
-        if idx % config.PRINT_FREQ == 0:
-            logger.info(
-                f'Test: [{idx+1}/{len(data_loader)}]\t'
-                f'Time {batch_time.val:.2f} ({batch_time.avg:.2f})\t'
-                f'Loss {loss_meter.val:.2f} ({loss_meter.avg:.2f})\t'
-                f'Acc@1 {acc_meter.val:.2f} ({acc_meter.avg:.2f})\t')
+        # if idx % config.PRINT_FREQ == 0:
+        #     logger.info(
+        #         f'Test: [{idx+1}/{len(data_loader)}]\t'
+        #         f'Time {batch_time.val:.2f} ({batch_time.avg:.2f})\t'
+        #         f'Loss {loss_meter.val:.2f} ({loss_meter.avg:.2f})\t'
+        #         f'Acc@1 {acc_meter.val:.2f} ({acc_meter.avg:.2f})\t')
+    
+    logger.info(f' * Acc@1 {acc_meter.avg:.2f}')
+    logger.info(f' * Loss {loss_meter.avg:.2f}')
     accs = torch.stack(accs)
-
     ci = (1.96*torch.std(accs)/math.sqrt(accs.shape[0])).item()
     return acc_meter.avg, loss_meter.avg, ci
 
