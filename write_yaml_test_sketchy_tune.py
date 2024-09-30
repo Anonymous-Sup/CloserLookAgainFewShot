@@ -64,6 +64,13 @@ Data["DATA"]["TEST"]["BATCH_SIZE"] = 8
 Data["OUTPUT"] = "/data/zhengwei/CloserLookAgainFewShot/novel_sketchy"
 Data["MODEL"] = {}
 
+Data["FEWSHOT"] = {}
+Data["FEWSHOT"]["NWAY"] = 5
+Data["FEWSHOT"]["KSHOT"] = 5
+Data["FEWSHOT"]["TRAIN_QUERY_SHOT"] = 5
+Data["FEWSHOT"]["TEST_QUERY_SHOT"] = 5
+Data["FEWSHOT"]["TRAIL"] = 1000
+
 Data["MODEL"]["NAME"] = "evaluation_vit_CE"
 Data["GPU_ID"] = 0
 
@@ -86,6 +93,11 @@ Data["AUG"]["STD"] = [0.2726, 0.2634, 0.2794]
 
 # miniImageNet
 Data["DATA"]["IMG_SIZE"] =224
+
+
+Data["DATASET"] = "sketchy"
+Data["DATA_ROOT"] = "/home/zhengwei/my_data/datasets"
+
 
 Data["MODEL"]["BACKBONE"] = 'vit'
 # Data["MODEL"]["BACKBONE"] = 'resnet50'
