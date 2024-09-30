@@ -72,7 +72,7 @@ Data["FEWSHOT"]["TEST_QUERY_SHOT"] = 15
 Data["FEWSHOT"]["TRAIL"] = 1000
 
 Data["MODEL"]["NAME"] = "evaluation_vit_CE"
-Data["GPU_ID"] = 0
+Data["GPU_ID"] = 1
 
 # 1 if use sequential sampling in the oroginal biased Meta-Dataset sampling procedure, 0 unbiased.
 # 1 can be used to re-implement the results in the ICML 2023 paper (except traffic signs); 0, however, is recommended for unbiased results
