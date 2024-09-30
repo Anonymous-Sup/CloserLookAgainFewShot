@@ -66,7 +66,7 @@ Data["MODEL"] = {}
 
 Data["FEWSHOT"] = {}
 Data["FEWSHOT"]["NWAY"] = 61
-Data["FEWSHOT"]["KSHOT"] = 1
+Data["FEWSHOT"]["KSHOT"] = 5
 Data["FEWSHOT"]["TRAIN_QUERY_SHOT"] = 15
 Data["FEWSHOT"]["TEST_QUERY_SHOT"] = 15
 Data["FEWSHOT"]["TRAIL"] = 1000

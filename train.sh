@@ -11,7 +11,7 @@
 
 #test
 python write_yaml_test_sketchy_tune.py
-nohup python -u main.py --cfg configs/sketchy/evaluation/finetune_sketchy_vit_CE.yaml --tag test > vitCE_finetune_novel_sketchy_a61w1s.log 2>&1 &
+nohup python -u main.py --cfg configs/sketchy/evaluation/finetune_sketchy_vit_CE.yaml --tag test > vitCE_finetune_novel_sketchy_a61w5s.log 2>&1 &
 
 
 
